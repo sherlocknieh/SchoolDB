@@ -35,7 +35,8 @@ CREATE TABLE Teachers (
 -- 课程信息表
 CREATE TABLE Courses (
     course_id VARCHAR(10) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(10) NOT NULL,
+    description TEXT, 
     credits INT NOT NULL
 );
 
