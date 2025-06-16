@@ -1,156 +1,5 @@
-USE master;
+USE SchoolDB;
 GO
-DROP DATABASE School;     -- 删除 School 数据库
-GO
-CREATE DATABASE School;   -- 创建 School 数据库
-GO
-USE School;
-GO
-
--- 用户表（统一存储学生、教师、管理员）
--- 使用username当做user使用
-CREATE TABLE Users (
-    id VARCHAR(10) PRIMARY KEY,
-    username VARCHAR(50) NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    role VARCHAR(10) NOT NULL CHECK (role IN ('student', 'teacher', 'admin'))
-);
-
--- 学生信息表
-CREATE TABLE Students (
-    student_id VARCHAR(10) PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    gender VARCHAR(10),
-    birth_date DATE,
-    FOREIGN KEY (student_id) REFERENCES Users(id) ON DELETE CASCADE
-);
-
--- 教师信息表
-CREATE TABLE Teachers (
-    teacher_id VARCHAR(10) PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    department VARCHAR(50),
-    introduction TEXT,
-    FOREIGN KEY (teacher_id) REFERENCES Users(id) ON DELETE CASCADE
-);
-
--- 课程信息表
-CREATE TABLE Courses (
-    course_id VARCHAR(10) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT, 
-    credits INT NOT NULL
-);
-
--- 成绩表
-CREATE TABLE Grades (
-    student_id VARCHAR(10) NOT NULL,
-    course_id VARCHAR(10) NOT NULL,
-    semester VARCHAR(20) NOT NULL,
-    score INT CHECK (score BETWEEN 0 AND 100),
-    FOREIGN KEY (student_id, course_id, semester) REFERENCES SC(student_id, course_id, semester) ON DELETE CASCADE,
-    PRIMARY KEY (student_id, course_id, semester)
-);
-
--- 教师教授信息
-CREATE TABLE TC (
-    teacher_id VARCHAR(10) NOT NULL,
-    course_id VARCHAR(10) NOT NULL,
-    semester VARCHAR(20) NOT NULL,
-    FOREIGN KEY (teacher_id) REFERENCES Teachers(teacher_id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES Courses(course_id) ON DELETE CASCADE,
-    PRIMARY KEY (teacher_id, course_id, semester)
-);
-
---选课表
---选课表需要与成绩表独立
-CREATE TABLE SC (
-    student_id VARCHAR(10) NOT NULL,
-    teacher_id VARCHAR(10) NOT NULL,
-    course_id VARCHAR(10) NOT NULL,
-    semester VARCHAR(20) NOT NULL,
-    FOREIGN KEY (student_id) REFERENCES Students(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (teacher_id, course_id, semester) REFERENCES TC(teacher_id, course_id, semester) ON DELETE CASCADE,
-    PRIMARY KEY (student_id, course_id, semester)
-);
-
---权限管理
---创建角色
-CREATE ROLE admin_role;
-CREATE ROLE teacher_role;
-CREATE ROLE student_role;
-
---授予权限
---管理员
-GRANT ALL PRIVILEGES ON ALL TABLES TO admin_role;
-GRANT CREATE USER, CREATE ROLE, GRANT ANY ROLE TO admin_role WITH ADMIN OPTION;
-
---教师
---三个view代表查询自己个人信息、查询自己的账号信息、查询成绩信息
---成绩信息应该查看学生姓名、课程名、成绩、学分
-CREATE VIEW V_Teacher_Info AS
-SELECT t.teacher_id, t.name, t.department, t.introduction
-FROM Teachers t JOIN Users u ON t.teacher_id = u.id
-WHERE u.username = CURRENT_USER;
-
-CREATE VIEW V_User_Self AS
-SELECT id, username, password, role FROM Users WHERE username = CURRENT_USER;
-
-CREATE VIEW V_Teacher_Grades AS
-SELECT st.name AS student_name, st.student_id, c.name AS course_name, g.score, c.credits, g.semester
-FROM Grades g
-JOIN SC sc ON g.student_id = sc.student_id AND g.course_id = sc.course_id AND g.semester = sc.semester
-JOIN Courses c ON g.course_id = c.course_id
-JOIN Students st ON g.student_id = st.student_id
-JOIN Users u ON sc.teacher_id = u.id
-WHERE u.username = CURRENT_USER;
-
-CREATE VIEW V_Teacher_Courses AS
-SELECT c.course_id, c.name, c.description, c.credits, tc.semester
-FROM TC tc
-JOIN Courses c ON tc.course_id = c.course_id
-JOIN Users u ON tc.teacher_id = u.id
-WHERE u.username = CURRENT_USER;
-
--- 账号信息只能改密码，个人信息不可以改用户名和id号
-GRANT SELECT, UPDATE(department, introduction) ON V_Teacher_Info TO teacher_role;
-GRANT SELECT, UPDATE(password) ON V_User_Self TO teacher_role;
-GRANT SELECT ON V_Teacher_Courses TO teacher_role;
-GRANT SELECT, INSERT, UPDATE ON V_Teacher_Grades TO teacher_role; 
-GRANT SELECT ON Students TO teacher_role; 
-GRANT SELECT ON Courses TO teacher_role; 
-
---学生
---成绩信息：姓名、学号、学期、课程、成绩、学分
-CREATE VIEW V_Student_Info AS
-SELECT s.student_id, s.name, s.gender, s.birth_date
-FROM Students s JOIN Users u ON s.student_id = u.id
-WHERE u.username = CURRENT_USER;
-
-CREATE VIEW V_Student_Grades AS
-SELECT c.name AS course_name, g.semester, g.score, c.credits,
-       CASE WHEN g.score >= 60 THEN '是' ELSE '否' END AS is_pass
-FROM Grades g
-JOIN Courses c ON g.course_id = c.course_id
-JOIN Users u ON g.student_id = u.id
-WHERE u.username = CURRENT_USER;
-
-CREATE VIEW V_Student_SC AS
-SELECT c.name AS course_name, t.name as teacher_name, sc.semester, c.credits
-FROM SC sc
-JOIN Courses c ON sc.course_id = c.course_id
-JOIN Teachers t ON sc.teacher_id = t.teacher_id
-JOIN Users u ON sc.student_id = u.id
-WHERE u.username = CURRENT_USER;
-
-
-GRANT SELECT, UPDATE(gender, birth_date) ON V_Student_Info TO student_role;
-GRANT SELECT, UPDATE(password) ON V_User_Self TO student_role;
-GRANT SELECT ON V_Student_Grades TO student_role;
-GRANT SELECT ON V_Student_SC TO student_role;
-GRANT SELECT ON Courses TO student_role;
-GRANT SELECT ON TC TO student_role;
-
 
 --以下是存储过程
 --为图方便和安全性，一切插入过程应该由存储过程来实现
@@ -189,6 +38,8 @@ BEGIN
 END;
 
 
+GO
+
 -- 如果课程ID已存在，则更新信息；否则，插入新课程。
 CREATE PROCEDURE sp_add_course
     @p_course_id VARCHAR(10),
@@ -214,6 +65,7 @@ BEGIN
 END;
 
 
+GO
 
 -- 存储过程：管理员安排教学任务
 CREATE PROCEDURE sp_add_tc
@@ -255,6 +107,7 @@ BEGIN
 END;
 
 
+GO
 --教师
 --修改成绩，可以插入，也可以更新
 CREATE PROCEDURE sp_insert_grade
@@ -299,6 +152,7 @@ BEGIN
         VALUES (source.student_id, source.course_id, source.semester, source.score);
 END;
 
+GO
 
 -- 存储过程：教师更新自己的个人信息 
 CREATE PROCEDURE sp_teacher_update_profile
@@ -332,6 +186,7 @@ BEGIN
     END CATCH
 END;
 
+GO
 
 --学生
 --选课
@@ -377,6 +232,7 @@ BEGIN
     END CATCH
 END;
 
+GO
 -- 存储过程：学生更新自己的个人信息
 CREATE PROCEDURE sp_student_update_profile
     @p_student_username VARCHAR(50),
@@ -409,6 +265,7 @@ BEGIN
     END CATCH
 END;
 
+GO
 
 -- 存储过程：学生退选课程
 CREATE PROCEDURE sp_student_drop_course
@@ -449,6 +306,7 @@ BEGIN
     END CATCH
 END;
 
+GO
 -- 存储过程：任何用户修改自己的密码
 CREATE PROCEDURE sp_update_password
     @p_username VARCHAR(50),
@@ -484,6 +342,7 @@ BEGIN
     END CATCH
 END;
 
+GO
 --触发器设置
 --使用存储过程来实现对表的插入删除，所以触发器应该用来检查违规操作
 CREATE TRIGGER trg_before_student_drop_course

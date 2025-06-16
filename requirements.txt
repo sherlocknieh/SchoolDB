@@ -1,3 +1,2 @@
-pyodbc
-flask
-flask-login
+pyodbc              #用于连接数据库
+flask               #用于构建WEB应用
