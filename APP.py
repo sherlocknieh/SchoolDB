@@ -70,14 +70,17 @@ def teacher():
 
 @app.route('/student', methods=['GET', 'POST'])
 def student():
-    # if session.get('role') != 'student':
-    #     return redirect(url_for('login'))
-    # return render_template('student.html', user=session['user'])
-    # 暂时跳过登录逻辑，直接进入学生页面
+    if session.get('role') != 'student':    # 如果未登录
+        return redirect(url_for('login'))   # 回到登录页面
+    
+    #登录成功
+    if request.method == 'POST':
+        cmd = request.form.get('cmd')
 
-    results = student_action()  # 调用 modules/student.py 中的数据库操作函数进行查询
 
-    return render_template('student.html', results=results) # 把查询结果显示在学生页面
+    results = student_action(cmd)  # 调用 modules/student.py 中的数据库操作函数进行查询
+
+    return render_template('student.html', user=session['user'], results=results) # 把查询结果显示在学生页面
 
 
 @app.route('/admin')

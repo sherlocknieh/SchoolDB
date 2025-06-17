@@ -77,6 +77,41 @@ CREATE TABLE Grades (
 
 -- 创建初始数据
 INSERT INTO Users (user_id, username, [password], role)
-VALUES ('a0001', 'admin1',   '123456', 'admin'  ),
+VALUES ('a0001', 'admin',   '123456', 'admin'  ),
        ('s0001', 'student1', '123456', 'student'),
-       ('t0001', 'teacher1', '123456', 'teacher');
+       ('s0002', 'student2', '123456', 'student'),
+       ('t0001', 'teacher1', '123456', 'teacher'),
+       ('t0002', 'teacher2', '123456', 'teacher');
+
+INSERT INTO Students (student_id, name, gender, birth_date)
+VALUES ('s0001', '学生1', '男', '2000-01-01'),
+       ('s0002', '学生2', '女', '2000-02-02');
+
+INSERT INTO Teachers (teacher_id, name, department, introduction)
+VALUES ('t0001', '教师1', '数学学院', NULL),
+       ('t0002', '教师2', '计算机学院', NULL);
+
+
+INSERT INTO Courses (course_id, name, description, credits)
+VALUES ('c0001', '微积分', '微积分课程', 4),
+       ('c0002', '数据结构', '数据结构课程', 3),
+       ('c0003', '操作系统', '操作系统课程', 3);
+
+
+INSERT INTO TC (teacher_id, course_id, semester)
+VALUES ('t0001', 'c0001', '2022秋'),
+       ('t0001', 'c0002', '2023春'),
+       ('t0002', 'c0002', '2023春'),
+       ('t0002', 'c0003', '2023秋');
+
+
+INSERT INTO SC (student_id, teacher_id, course_id, semester)
+VALUES ('s0001', 't0001', 'c0001', '2021秋'),
+       ('s0001', 't0001', 'c0002', '2022秋'),
+       ('s0001', 't0002', 'c0002', '2023春');
+
+
+INSERT INTO Grades (student_id, course_id, semester, score)
+VALUES ('s0001', 'c0001', '2021秋', 80),
+       ('s0001', 'c0001', '2022秋', 90),
+       ('s0002', 'c0002', '2023春', 85);

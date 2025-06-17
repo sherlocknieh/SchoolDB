@@ -1,9 +1,9 @@
 
 # 导入数据库连接模块
 if __name__ == '__main__':
-    from config import create_connection
+    from config import create_connection  # 直接运行本文件时，从当前目录导入模块
 else:
-    from .config import create_connection
+    from .config import create_connection # 从 APP.py 运行时，从当前目录的父目录导入模块
 
 
 
