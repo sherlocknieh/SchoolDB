@@ -60,7 +60,6 @@ CREATE TABLE SC (
     course_id VARCHAR(10) NOT NULL,
     semester VARCHAR(20) NOT NULL,
     FOREIGN KEY (student_id) REFERENCES Students(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (teacher_id, course_id, semester) REFERENCES TC(teacher_id, course_id, semester) ON DELETE CASCADE,
     PRIMARY KEY (student_id, course_id, semester)
 );
 
@@ -78,4 +77,6 @@ CREATE TABLE Grades (
 
 -- 创建初始数据
 INSERT INTO Users (user_id, username, [password], role)
-VALUES (1, 'admin', '123456', 'admin');
+VALUES ('a0001', 'admin1',   '123456', 'admin'  ),
+       ('s0001', 'student1', '123456', 'student'),
+       ('t0001', 'teacher1', '123456', 'teacher');
