@@ -3,7 +3,7 @@ import pyodbc
 
 CONFIG = {
     'driver': 'ODBC Driver 17 for SQL Server',
-    'server': 'localhost\\SQLEXPRESS',
+    'server': '华硕天选',
     'database': 'SchoolDB',
     'username': 'sa',
     'password': '123456',

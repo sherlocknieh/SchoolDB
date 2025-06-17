@@ -5,7 +5,7 @@ from modules.config import create_connection   # 数据库连接函数
 from modules.teacher import teacher_action   # 教师数据库操作函数
 from modules.student import student_action   # 学生数据库操作函数
 from modules.admin import admin_action     # 管理员数据库操作函数
-
+from modules.admin import test
 
 app = Flask(__name__)
 
@@ -85,6 +85,7 @@ def student():
 
 @app.route('/admin')
 def admin():
+    test()
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
     return render_template('admin.html', user=session['user'])

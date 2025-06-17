@@ -29,4 +29,27 @@ def admin_action(cmd):
     cursor.close()
     conn.close()
 
+def test():
+    conn = create_connection()
+    cursor = conn.cursor()
+    sql_query = f"EXEC {'sp_get_course_detail_public'} ?"
+    cursor.execute(sql_query, 'c0001')
+    
+    result_set_count = 1
+    
+    while True:
+        if not cursor.description:
+            break 
 
+        print(f"\n--- 正在处理第 {result_set_count} 个结果集 ---")
+        columns = [column[0] for column in cursor.description]
+        print(f"列名: {columns}")
+        rows = cursor.fetchall()
+        if not rows:
+            print("这个结果集没有返回任何行。")
+        else:
+            for row in rows:
+                print(row)
+        if not cursor.nextset():
+            break     
+        result_set_count += 1
