@@ -99,8 +99,8 @@ BEGIN
         SELECT @v_student_id = user_id FROM Users WHERE username = @p_student_username AND role = 'student';
         IF @v_student_id IS NULL
         BEGIN
-            DECLARE @error_msg VARCHAR(200) = '操作失败：用户(' + @p_student_username + ')不是学生或不存在。';
-            THROW 50014, @error_msg, 1;
+            DECLARE @error_msg1 VARCHAR(200) = '操作失败：用户(' + @p_student_username + ')不是学生或不存在。';
+            THROW 50014, @error_msg1, 1;
         END
 
         UPDATE Students
@@ -113,8 +113,8 @@ BEGIN
         PRINT @success_msg;
     END TRY
     BEGIN CATCH
-        DECLARE @error_msg VARCHAR(200) = '更新学生信息失败: ' + ERROR_MESSAGE();
-        THROW 50015, @error_msg, 1;
+        DECLARE @error_msg2 VARCHAR(200) = '更新学生信息失败: ' + ERROR_MESSAGE();
+        THROW 50015, @error_msg2, 1;
     END CATCH
 END;
 

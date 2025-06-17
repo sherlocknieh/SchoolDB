@@ -60,7 +60,6 @@ CREATE TABLE SC (
     course_id VARCHAR(10) NOT NULL,
     semester VARCHAR(20) NOT NULL,
     FOREIGN KEY (student_id) REFERENCES Students(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (teacher_id, course_id, semester) REFERENCES TC(teacher_id, course_id, semester) ON DELETE CASCADE,
     PRIMARY KEY (student_id, course_id, semester)
 );
 

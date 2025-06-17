@@ -573,10 +573,10 @@ BEGIN
                  END
         ORDER BY g.semester, 
                  CASE 
-                     WHEN g.score >= 90 THEN 1
-                     WHEN g.score >= 80 THEN 2
-                     WHEN g.score >= 70 THEN 3
-                     WHEN g.score >= 60 THEN 4
+                     WHEN MIN(g.score) >= 90 THEN 1
+                     WHEN MIN(g.score) >= 80 THEN 2
+                     WHEN MIN(g.score) >= 70 THEN 3
+                     WHEN MIN(g.score) >= 60 THEN 4
                      ELSE 5
                  END;
     END
