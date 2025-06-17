@@ -157,8 +157,8 @@ BEGIN
         SELECT @v_teacher_id = user_id FROM Users WHERE username = @p_teacher_username AND role = 'teacher';
         IF @v_teacher_id IS NULL
         BEGIN
-            DECLARE @error_msg VARCHAR(200) = '操作失败：用户(' + @p_teacher_username + ')不是教师或不存在。';
-            THROW 50008, @error_msg, 1;
+            DECLARE @error_msg1 VARCHAR(200) = '操作失败：用户(' + @p_teacher_username + ')不是教师或不存在。';
+            THROW 50008, @error_msg1, 1;
         END
 
         UPDATE Teachers
@@ -171,8 +171,8 @@ BEGIN
         PRINT @success_msg;
     END TRY
     BEGIN CATCH
-        DECLARE @error_msg VARCHAR(200) = '更新教师信息失败: ' + ERROR_MESSAGE();
-        THROW 50009, @error_msg, 1;
+        DECLARE @error_msg2 VARCHAR(200) = '更新教师信息失败: ' + ERROR_MESSAGE();
+        THROW 50009, @error_msg2, 1;
     END CATCH
 END;
 
@@ -264,7 +264,7 @@ BEGIN
     SELECT 
         tc.course_id,
         c.name AS course_name,
-        c.description,
+        CAST(c.description AS NVARCHAR(MAX)) AS description,  -- 转换text类型
         c.credits,
         tc.semester,
         COUNT(sc.student_id) AS enrolled_students
@@ -275,7 +275,7 @@ BEGIN
         AND tc.semester = sc.semester
     WHERE tc.teacher_id = @TeacherId
         AND (@Semester IS NULL OR tc.semester = @Semester)
-    GROUP BY tc.course_id, c.name, c.description, c.credits, tc.semester
+    GROUP BY tc.course_id, c.name, CAST(c.description AS NVARCHAR(MAX)), c.credits, tc.semester
     ORDER BY tc.semester DESC, tc.course_id;
 END
 
