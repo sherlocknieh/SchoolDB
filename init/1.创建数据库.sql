@@ -11,7 +11,7 @@ GO
 -- 使用username当做user使用
 CREATE TABLE Users (
     user_id VARCHAR(10) PRIMARY KEY,
-    username VARCHAR(50) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
     role VARCHAR(10) NOT NULL CHECK (role IN ('student', 'teacher', 'admin'))
 );
@@ -21,6 +21,7 @@ CREATE TABLE Students (
     student_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     gender VARCHAR(10),
+    birth_date DATE,
     FOREIGN KEY (student_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
@@ -59,6 +60,7 @@ CREATE TABLE SC (
     course_id VARCHAR(10) NOT NULL,
     semester VARCHAR(20) NOT NULL,
     FOREIGN KEY (student_id) REFERENCES Students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (teacher_id, course_id, semester) REFERENCES TC(teacher_id, course_id, semester) ON DELETE CASCADE,
     PRIMARY KEY (student_id, course_id, semester)
 );
 

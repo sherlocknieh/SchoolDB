@@ -18,7 +18,7 @@ CREATE PROCEDURE sp_add_user
     @p_introduction TEXT = NULL
 AS
 BEGIN
-    INSERT INTO Users (id, username, password, role)
+    INSERT INTO Users (user_id, username, password, role)
     VALUES (@p_id, @p_username, @p_password, @p_role);
 
     IF @p_role = 'student' 
@@ -36,6 +36,53 @@ BEGIN
         PRINT 'Admin user created, no entry in Students/Teachers table.';
     END
 END;
+
+GO
+-- 管理员删除用户，由于在表中实现了ON DELETE CASCADE，可以直接删除
+CREATE PROCEDURE sp_delete_user
+    @p_username VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @v_user_id VARCHAR(10);
+    DECLARE @v_role VARCHAR(10);
+    DECLARE @error_message NVARCHAR(500);
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT @v_user_id = user_id, @v_role = role
+        FROM Users 
+        WHERE username = @p_username;
+        
+        IF @v_user_id IS NULL
+        BEGIN
+            SET @error_message = '用户不存在';
+            THROW 50001, @error_message, 1;
+        END
+        
+        IF @v_role = 'admin'
+        BEGIN
+            SET @error_message = '不能删除管理员账户';
+            THROW 50002, @error_message, 1;
+        END
+        
+        DELETE FROM Users WHERE user_id = @v_user_id;
+        
+        COMMIT TRANSACTION;
+        
+        SELECT '用户 ' + @p_username + ' 及其所有相关信息已成功删除' AS result;
+        
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END
 
 
 GO
@@ -64,9 +111,71 @@ BEGIN
     PRINT @msg;
 END;
 
+GO
+--管理员删除某一个课程
+CREATE PROCEDURE sp_delete_course
+    @course_id VARCHAR(10)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @course_exists INT = 0;
+    DECLARE @teaching_count INT = 0;
+    DECLARE @student_count INT = 0;
+    DECLARE @error_message NVARCHAR(500);
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        SELECT @course_exists = COUNT(*)
+        FROM Courses 
+        WHERE course_id = @course_id;
+        
+        IF @course_exists = 0
+        BEGIN
+            SET @error_message = '指定的课程不存在';
+            THROW 50001, @error_message, 1;
+        END
+
+        SELECT @teaching_count = COUNT(*)
+        FROM TC 
+        WHERE course_id = @course_id;
+        
+        SELECT @student_count = COUNT(*)
+        FROM SC 
+        WHERE course_id = @course_id;
+        
+        IF @teaching_count > 0 OR @student_count > 0
+        BEGIN
+            PRINT '警告: 该课程有 ' + CAST(@teaching_count AS VARCHAR(10)) + ' 个教学任务和 ' + 
+                  CAST(@student_count AS VARCHAR(10)) + ' 个选课记录，删除将影响相关数据';
+        END
+        
+        DELETE FROM Courses WHERE course_id = @course_id;
+        
+        COMMIT TRANSACTION;
+        
+        SELECT '课程已成功删除: 课程ID=' + @course_id + 
+               CASE WHEN @teaching_count > 0 OR @student_count > 0 
+                    THEN ', 同时删除了' + CAST(@teaching_count AS VARCHAR(10)) + '个教学任务和' + 
+                         CAST(@student_count AS VARCHAR(10)) + '个选课记录'
+                    ELSE '' 
+               END AS result;
+        
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END
 
 GO
-
 -- 存储过程：管理员安排教学任务
 CREATE PROCEDURE sp_add_tc
     @p_teacher_id VARCHAR(10),
@@ -75,13 +184,13 @@ CREATE PROCEDURE sp_add_tc
 AS
 BEGIN
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM Teachers WHERE teacher_id = @p_teacher_id)
+        IF NOT EXISTS (SELECT * FROM Teachers WHERE teacher_id = @p_teacher_id)
         BEGIN
             DECLARE @error_msg1 VARCHAR(200) = '安排失败：教师ID(' + @p_teacher_id + ')不存在。';
             THROW 50001, @error_msg1, 1;
         END
 
-        IF NOT EXISTS (SELECT 1 FROM Courses WHERE course_id = @p_course_id)
+        IF NOT EXISTS (SELECT * FROM Courses WHERE course_id = @p_course_id)
         BEGIN
             DECLARE @error_msg2 VARCHAR(200) = '安排失败：课程ID(' + @p_course_id + ')不存在。';
             THROW 50002, @error_msg2, 1;
@@ -106,6 +215,76 @@ BEGIN
     END CATCH
 END;
 
+GO
+
+-- 存储过程：管理员删除教学任务，注意如果有学生选课，会一并删除
+CREATE PROCEDURE sp_delete_tc
+    @teacher_id VARCHAR(10),
+    @course_id VARCHAR(10),
+    @semester VARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @task_count INT = 0;
+    DECLARE @student_count INT = 0;
+    DECLARE @error_message NVARCHAR(500);
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        SELECT @task_count = COUNT(*)
+        FROM TC 
+        WHERE teacher_id = @teacher_id 
+          AND course_id = @course_id 
+          AND semester = @semester;
+
+        IF @task_count = 0
+        BEGIN
+            SET @error_message = '指定的教学任务不存在';
+            THROW 50001, @error_message, 1;
+        END
+        
+        SELECT @student_count = COUNT(*)
+        FROM SC 
+        WHERE teacher_id = @teacher_id 
+          AND course_id = @course_id 
+          AND semester = @semester;
+        
+        IF @student_count > 0
+        BEGIN
+            PRINT '警告: 该教学任务有 ' + CAST(@student_count AS VARCHAR(10)) + ' 名学生选课，删除将影响学生记录';
+        END
+        
+        DELETE FROM TC 
+        WHERE teacher_id = @teacher_id 
+          AND course_id = @course_id 
+          AND semester = @semester;
+        
+        COMMIT TRANSACTION;
+        SELECT '教学任务已成功删除: 教师ID=' + @teacher_id + 
+               ', 课程ID=' + @course_id + 
+               ', 学期=' + @semester +
+               CASE WHEN @student_count > 0 
+                    THEN ', 同时删除了' + CAST(@student_count AS VARCHAR(10)) + '条相关选课记录'
+                    ELSE '' 
+               END AS result;
+        
+    END TRY
+    BEGIN CATCH
+        -- 回滚事务
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        -- 重新抛出异常
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END
+
 
 GO
 --教师
@@ -120,14 +299,14 @@ AS
 BEGIN
     DECLARE @v_teacher_id VARCHAR(10);
     
-    SELECT @v_teacher_id = id FROM Users WHERE username = @p_teacher_username AND role = 'teacher';
+    SELECT @v_teacher_id = user_id FROM Users WHERE username = @p_teacher_username AND role = 'teacher';
     IF @v_teacher_id IS NULL
     BEGIN
         THROW 50005, '操作失败：当前用户不是教师或用户不存在。', 1;
     END
 
     IF NOT EXISTS (
-        SELECT 1 FROM TC
+        SELECT * FROM TC
         WHERE teacher_id = @v_teacher_id AND course_id = @p_course_id AND semester = @p_semester
     )
     BEGIN
@@ -135,7 +314,7 @@ BEGIN
     END
     
     IF NOT EXISTS (
-        SELECT 1 FROM SC
+        SELECT * FROM SC
         WHERE student_id = @p_student_id AND course_id = @p_course_id AND semester = @p_semester AND teacher_id = @v_teacher_id
     )
     BEGIN
@@ -153,6 +332,73 @@ BEGIN
 END;
 
 GO
+-- 教师删除某一个学生的成绩
+CREATE PROCEDURE sp_delete_grade
+    @teacher_id VARCHAR(10),
+    @student_id VARCHAR(10),
+    @course_id VARCHAR(10),
+    @semester VARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @grade_exists INT = 0;
+    DECLARE @teacher_authority INT = 0;
+    DECLARE @error_message NVARCHAR(500);
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        SELECT @teacher_authority = COUNT(*)
+        FROM TC 
+        WHERE teacher_id = @teacher_id 
+          AND course_id = @course_id 
+          AND semester = @semester;
+        
+        IF @teacher_authority = 0
+        BEGIN
+            SET @error_message = '您没有权限删除该课程的成绩，您未教授此课程';
+            THROW 50001, @error_message, 1;
+        END
+        
+        SELECT @grade_exists = COUNT(*)
+        FROM Grades 
+        WHERE student_id = @student_id 
+          AND course_id = @course_id 
+          AND semester = @semester;
+        
+        IF @grade_exists = 0
+        BEGIN
+            SET @error_message = '指定的成绩记录不存在';
+            THROW 50002, @error_message, 1;
+        END
+        
+        DELETE FROM Grades 
+        WHERE student_id = @student_id 
+          AND course_id = @course_id 
+          AND semester = @semester;
+        
+        COMMIT TRANSACTION;
+        
+        SELECT '成功删除成绩: 学生ID=' + @student_id + 
+               ', 课程ID=' + @course_id + 
+               ', 学期=' + @semester AS result;
+        
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END
+
+
+GO
 
 -- 存储过程：教师更新自己的个人信息 
 CREATE PROCEDURE sp_teacher_update_profile
@@ -164,7 +410,7 @@ BEGIN
     BEGIN TRY
         DECLARE @v_teacher_id VARCHAR(10);
         
-        SELECT @v_teacher_id = id FROM Users WHERE username = @p_teacher_username AND role = 'teacher';
+        SELECT @v_teacher_id = user_id FROM Users WHERE username = @p_teacher_username AND role = 'teacher';
         IF @v_teacher_id IS NULL
         BEGIN
             DECLARE @error_msg VARCHAR(200) = '操作失败：用户(' + @p_teacher_username + ')不是教师或不存在。';
@@ -200,14 +446,14 @@ BEGIN
     BEGIN TRY
         DECLARE @v_student_id VARCHAR(10);
         
-        SELECT @v_student_id = id FROM Users WHERE username = @p_student_username AND role = 'student';
+        SELECT @v_student_id = user_id FROM Users WHERE username = @p_student_username AND role = 'student';
         IF @v_student_id IS NULL
         BEGIN
             THROW 50010, '操作失败：当前用户不是学生或用户不存在。', 1;
         END
 
         IF NOT EXISTS (
-            SELECT 1 FROM TC
+            SELECT * FROM TC
             WHERE teacher_id = @p_teacher_id AND course_id = @p_course_id AND semester = @p_semester
         )
         BEGIN
@@ -243,7 +489,7 @@ BEGIN
     BEGIN TRY
         DECLARE @v_student_id VARCHAR(10);
         
-        SELECT @v_student_id = id FROM Users WHERE username = @p_student_username AND role = 'student';
+        SELECT @v_student_id = user_id FROM Users WHERE username = @p_student_username AND role = 'student';
         IF @v_student_id IS NULL
         BEGIN
             DECLARE @error_msg VARCHAR(200) = '操作失败：用户(' + @p_student_username + ')不是学生或不存在。';
@@ -278,7 +524,7 @@ BEGIN
         DECLARE @v_student_id VARCHAR(10);
         DECLARE @rowcount INT;
         
-        SELECT @v_student_id = id FROM Users WHERE username = @p_student_username AND role = 'student';
+        SELECT @v_student_id = user_id FROM Users WHERE username = @p_student_username AND role = 'student';
         IF @v_student_id IS NULL
         BEGIN
             DECLARE @error_msg1 VARCHAR(200) = '操作失败：用户(' + @p_student_username + ')不是学生或不存在。';
@@ -345,13 +591,13 @@ END;
 GO
 --触发器设置
 --使用存储过程来实现对表的插入删除，所以触发器应该用来检查违规操作
-CREATE TRIGGER trg_before_student_drop_course
+CREATE TRIGGER trg_prevent_drop_with_grades
 ON SC
 FOR DELETE
 AS
 BEGIN
     IF EXISTS (
-        SELECT 1
+        SELECT *
         FROM Grades g
         INNER JOIN deleted d ON g.student_id = d.student_id 
             AND g.course_id = d.course_id 
@@ -359,16 +605,7 @@ BEGIN
         WHERE g.score IS NOT NULL
     )
     BEGIN
+        ROLLBACK TRANSACTION;
         THROW 50000, '退课失败：该课程已有成绩录入，无法退选。', 1;
-    END
-    ELSE
-    BEGIN
-        DELETE FROM SC 
-        WHERE EXISTS (
-            SELECT 1 FROM deleted d 
-            WHERE SC.student_id = d.student_id 
-                AND SC.course_id = d.course_id 
-                AND SC.semester = d.semester
-        );
     END
 END
