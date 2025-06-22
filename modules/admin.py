@@ -13,21 +13,14 @@ else:
 """
 
 
-def admin_action(cmd):
+def admin_action(cmd=''):
     """
     管理员命令解析器
     """
-    conn = create_connection()
-    cursor = conn.cursor()
-
-
-    cursor.execute("SELECT * FROM users")
-    for row in cursor.fetchall():
-        print(row)
-
-    
-    cursor.close()
-    conn.close()
+    if cmd == 'test':
+        test()
+    else:
+        print(f"未知命令: {cmd}")
 
 def test():
     conn = create_connection()

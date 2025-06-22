@@ -1,14 +1,23 @@
 USE master;
 GO
-DROP DATABASE SchoolDB;     -- 删除 School 数据库
+
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'SchoolDB')
+BEGIN
+    DROP DATABASE SchoolDB;     -- 删除旧的 School 数据库
+END
 GO
-CREATE DATABASE SchoolDB;   -- 创建 School 数据库
+
+CREATE DATABASE SchoolDB;   -- 创建新的 School 数据库
 GO
-USE SchoolDB;
+
+USE SchoolDB;   -- 使用 School 数据库
 GO
 
 -- 用户表（统一存储学生、教师、管理员）
--- 使用username当做user使用
+-- user_id: 唯一标识符, 其它表的 student_id、teacher_id 与此处的 user_id 保持一致
+-- username: 用户名, 用于登录
+-- password: 密码
+-- role: 用户角色（student、teacher、admin）
 CREATE TABLE Users (
     user_id VARCHAR(10) PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -53,7 +62,6 @@ CREATE TABLE TC (
 );
 
 --选课表
---选课表需要与成绩表独立
 CREATE TABLE SC (
     student_id VARCHAR(10) NOT NULL,
     teacher_id VARCHAR(10) NOT NULL,
@@ -74,6 +82,7 @@ CREATE TABLE Grades (
     PRIMARY KEY (student_id, course_id, semester)
 );
 
+GO
 
 -- 创建初始数据
 INSERT INTO Users (user_id, username, [password], role)
@@ -120,3 +129,9 @@ VALUES ('s0001', 'c0001', '2022秋', 80),
        ('s0002', 'c0001', '2022秋', 70),
        ('s0002', 'c0002', '2023春', 80),
        ('s0002', 'c0003', '2023秋', 90);
+
+
+-- 断开连接
+GO
+USE master;
+GO

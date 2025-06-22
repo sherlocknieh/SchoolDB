@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>登录</title>
+</head>
+<body>
+    <h2>登录</h2>
+    <form id="loginForm" method="post">
+        <p><input type="text" name="username" placeholder="用户名" required></p>
+        <p><input type="password" name="password" placeholder="密码" required></p>
+        <p>
+            <select name="role" required>
+                <option value="">--选择身份--</option>
+                <option value="teacher">老师</option>
+                <option value="student">学生</option>
+                <option value="admin">管理员</option>
+            </select>
+        </p>
+        <p><button type="submit">登录</button></p>
+    </form>
+
+    <div id="error-message" style="color:red;"></div>
+
+    <script>
+        document.getElementById('loginForm').onsubmit = function(e) {
+            e.preventDefault();
+            fetch('/login', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    document.getElementById('error-message').innerText = data.error_message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error-message').innerText = error.message;
+            });
+        };
+    </script>
+</body>
+</html>
