@@ -54,28 +54,232 @@ def student():
         return redirect(url_for('login'))   # 回到登录页面
     
     # 登录成功
-    # 查询事务写在这里
+    from modules.student import student_action   # 学生数据库操作函数
     results = []
+    message = ''
+    
     if request.method == 'POST':
-        cmd = request.form.get('cmd')
-        from modules.student import student_action   # 学生数据库操作函数
-        results = student_action(cmd)  # 调用 modules/student.py 中的数据库操作函数进行查询
+        action = request.form.get('action')
+        
+        if action == 'select_course':
+            result = student_action('select_course',
+                student_username=session['user'],
+                teacher_id=request.form.get('teacher_id'),
+                course_id=request.form.get('course_id'),
+                semester=request.form.get('semester')
+            )
+            message = result['message']
+            
+        elif action == 'drop_course':
+            result = student_action('drop_course',
+                student_username=session['user'],
+                course_id=request.form.get('course_id'),
+                semester=request.form.get('semester')
+            )
+            message = result['message']
+            
+        elif action == 'update_profile':
+            result = student_action('update_profile',
+                student_username=session['user'],
+                gender=request.form.get('gender'),
+                birth_date=request.form.get('birth_date')
+            )
+            message = result['message']
+            
+        elif action == 'get_grades_by_semester':
+            result = student_action('get_grades_by_semester',
+                student_id=session['user_id'],
+                semester=request.form.get('semester')
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_grades_by_course':
+            result = student_action('get_grades_by_course',
+                student_id=session['user_id'],
+                course_id=request.form.get('course_id')
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_all_grades':
+            result = student_action('get_all_grades',
+                student_id=session['user_id']
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_courses':
+            result = student_action('get_courses',
+                student_id=session['user_id']
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_credit':
+            result = student_action('get_credit',
+                student_id=session['user_id']
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_credit_report':
+            result = student_action('get_credit_report',
+                student_id=session['user_id']
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_overview':
+            result = student_action('get_overview',
+                student_id=session['user_id']
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'update_password':
+            result = student_action('update_password',
+                username=session['user'],
+                old_password=request.form.get('old_password'),
+                new_password=request.form.get('new_password')
+            )
+            message = result['message']
+            
+        elif action == 'get_course_info':
+            result = student_action('get_course_info',
+                course_id=request.form.get('course_id') or None,
+                course_name=request.form.get('course_name') or None,
+                teacher_name=request.form.get('teacher_name') or None,
+                semester=request.form.get('semester') or None,
+                min_credits=int(request.form.get('min_credits')) if request.form.get('min_credits') else None,
+                max_credits=int(request.form.get('max_credits')) if request.form.get('max_credits') else None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_course_detail':
+            result = student_action('get_course_detail',
+                course_id=request.form.get('course_id')
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
 
-    return render_template('student.html', user=session['user'], results=results) # 把查询结果显示在学生页面
+    return render_template('student.html', user=session['user'], results=results, message=message)
+
 
 
 # 教师页面
 @app.route('/teacher', methods=['GET', 'POST'])
 def teacher():
-    if session.get('role') != 'teacher':    # 如果未登录
-        return redirect(url_for('login'))   # 回到登录页面
-    
+    if session.get('role') != 'teacher': # 如果未登录
+        return redirect(url_for('login')) # 回到登录页面
+
     # 登录成功
     from modules.teacher import teacher_action   # 教师数据库操作函数
-    # 查询事务写在这里
+    results = []
+    message = ''
     
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'insert_grade':
+            result = teacher_action('insert_grade',
+                teacher_username=session['user'],
+                student_id=request.form.get('student_id'),
+                course_id=request.form.get('course_id'),
+                semester=request.form.get('semester'),
+                score=int(request.form.get('score'))
+            )
+            message = result['message']
+            
+        elif action == 'delete_grade':
+            result = teacher_action('delete_grade',
+                teacher_id=session['user_id'],
+                student_id=request.form.get('student_id'),
+                course_id=request.form.get('course_id'),
+                semester=request.form.get('semester')
+            )
+            message = result['message']
+            
+        elif action == 'update_profile':
+            result = teacher_action('update_profile',
+                teacher_username=session['user'],
+                department=request.form.get('department'),
+                introduction=request.form.get('introduction')
+            )
+            message = result['message']
+            
+        elif action == 'get_grades':
+            result = teacher_action('get_grades',
+                teacher_id=session['user_id'],
+                semester=request.form.get('semester') or None,
+                course_id=request.form.get('course_id') or None,
+                student_id=request.form.get('student_id') or None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_courses':
+            result = teacher_action('get_courses',
+                teacher_id=session['user_id'],
+                semester=request.form.get('semester') or None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_students':
+            result = teacher_action('get_students',
+                teacher_id=session['user_id'],
+                course_id=request.form.get('course_id'),
+                semester=request.form.get('semester')
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_grade_status':
+            result = teacher_action('get_grade_status',
+                teacher_id=session['user_id'],
+                semester=request.form.get('semester') or None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'update_password':
+            result = teacher_action('update_password',
+                username=session['user'],
+                old_password=request.form.get('old_password'),
+                new_password=request.form.get('new_password')
+            )
+            message = result['message']
 
-    return render_template('teacher.html', user=session['user'])  # 显示教师页面
+    return render_template('teacher.html', user=session['user'], results=results, message=message)
+
 
 
 # 管理员页面

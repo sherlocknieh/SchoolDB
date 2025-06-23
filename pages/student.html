@@ -1,103 +1,625 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>学生主页</title>
-    <link rel="stylesheet" href="static/styles.css">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-
-<body>
-    <!-- 顶部导航栏 -->
-    <div class="topbar">
-        <div class="left">
-            姓名：测试　学号：123456
-        </div>
-        <div class="right">
-            <button id="changePwdBtn" type="button">修改密码</button>
-            <a href="{{ url_for('logout') }}">登出</a>
-        </div>
-    </div>
-    
-    <!-- 主要内容容器 -->
-    <div class="main-container">
-        <!-- 搜索栏 -->
-        <form class="search-bar" method="get" action="{{ url_for('student') }}">
-            <label for="filter">筛选：</label>
-            <select name="filter" id="filter">
-                <option value="">全部</option>
-                <option value="course">课程</option>
-                <option value="score">成绩</option>
-            </select>
-            <input type="text" name="keyword" placeholder="请输入搜索内容" value="{{ request.args.get('keyword', '') }}">
-            <button type="submit">搜索</button>
-        </form>
+    <title>学生管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
-        <!-- 成绩表格 -->
-        <table>
-            <thead>
-                <tr>
-                    <th>课程编号</th>
-                    <th>课程名称</th>
-                    <th>成绩</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in results %}
-                <tr>
-                    <td>{{ row.id }}</td>
-                    <td>{{ row.name }}</td>
-                    <td>{{ row.score }}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="3">暂无数据</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    
-    <!-- 页脚 -->
-    <div class="footer">
-        学生成绩管理系统 &copy; 2025
-    </div>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .nav h1 {
+            font-size: 1.8rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        
+        .tab-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .tab.active {
+            background-color: #4facfe;
+            color: white;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #e9ecef;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 2rem;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .results-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .results-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .message {
+            padding: 12px 20px;
+            margin: 1rem 0;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .search-filters {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <h1>学生管理系统</h1>
+            <div class="nav-links">
+                <span>欢迎，{{ user }} 同学</span>
+                <a href="{{ url_for('logout') }}">登出</a>
+            </div>
+        </nav>
+    </header>
 
-    <!-- 密码修改模态框 -->
-    <div id="pwdModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeModal">&times;</span>
-            <h3>修改密码</h3>
-            <form method="post" action="{{ url_for('student') }}">
-                <label for="old_password">原密码：</label>
-                <input type="password" id="old_password" name="old_password" required>
+    <div class="container">
+        {% if message %}
+            <div class="message {% if '成功' in message %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endif %}
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('overview')">个人概览</button>
+                <button class="tab" onclick="showTab('grades')">成绩查询</button>
+                <button class="tab" onclick="showTab('courses')">课程管理</button>
+                <button class="tab" onclick="showTab('course-search')">课程查询</button>
+                <button class="tab" onclick="showTab('credit')">学分统计</button>
+                <button class="tab" onclick="showTab('profile')">个人设置</button>
+            </div>
+
+            <!-- 个人概览 -->
+            <div id="overview" class="tab-content active">
+                <h2>个人概览</h2>
+                <form method="post">
+                    <input type="hidden" name="action" value="get_overview">
+                    <button type="submit" class="btn">刷新概览信息</button>
+                </form>
+            </div>
+
+            <!-- 成绩查询 -->
+            <div id="grades" class="tab-content">
+                <h2>成绩查询</h2>
                 
-                <label for="new_password">新密码：</label>
-                <input type="password" id="new_password" name="new_password" required>
+                <!-- 查询所有成绩 -->
+                <div class="search-filters">
+                    <h3>查询所有成绩</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_all_grades">
+                        <button type="submit" class="btn">查询所有成绩</button>
+                    </form>
+                </div>
+
+                <!-- 按学期查询成绩 -->
+                <div class="search-filters">
+                    <h3>按学期查询成绩</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_grades_by_semester">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>学期</label>
+                                <input type="text" name="semester" placeholder="例：2024春" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">查询成绩</button>
+                    </form>
+                </div>
+
+                <!-- 按课程查询成绩 -->
+                <div class="search-filters">
+                    <h3>按课程查询成绩</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_grades_by_course">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">查询成绩</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 课程管理 -->
+            <div id="courses" class="tab-content">
+                <h2>课程管理</h2>
                 
-                <label for="confirm_password">确认新密码：</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
+                <!-- 选课 -->
+                <div class="search-filters">
+                    <h3>选课</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="select_course">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>教师ID</label>
+                                <input type="text" name="teacher_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>学期</label>
+                                <input type="text" name="semester" placeholder="例：2024春" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">选课</button>
+                    </form>
+                </div>
+
+                <!-- 退课 -->
+                <div class="search-filters">
+                    <h3>退课</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="drop_course">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>学期</label>
+                                <input type="text" name="semester" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-danger">退课</button>
+                    </form>
+                </div>
+
+                <!-- 查询我的课程 -->
+                <div class="search-filters">
+                    <h3>查询我的课程</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_courses">
+                        <button type="submit" class="btn">查询我的课程</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 课程查询 -->
+            <div id="course-search" class="tab-content">
+                <h2>课程查询</h2>
                 
-                <button type="submit">提交</button>
-            </form>
+                <!-- 查询所有课程 -->
+                <div class="search-filters">
+                    <h3>查询所有课程</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_course_info">
+                        <button type="submit" class="btn">查询所有课程</button>
+                    </form>
+                </div>
+
+                <!-- 多条件查询课程 -->
+                <div class="search-filters">
+                    <h3>多条件查询课程</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_course_info">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>课程ID（可选）</label>
+                                <input type="text" name="course_id" placeholder="留空查询所有">
+                            </div>
+                            <div class="form-group">
+                                <label>课程名称（可选）</label>
+                                <input type="text" name="course_name" placeholder="支持模糊查询">
+                            </div>
+                            <div class="form-group">
+                                <label>教师姓名（可选）</label>
+                                <input type="text" name="teacher_name" placeholder="支持模糊查询">
+                            </div>
+                            <div class="form-group">
+                                <label>学期（可选）</label>
+                                <input type="text" name="semester" placeholder="例：2024春">
+                            </div>
+                            <div class="form-group">
+                                <label>最低学分（可选）</label>
+                                <input type="number" name="min_credits" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>最高学分（可选）</label>
+                                <input type="number" name="max_credits" min="0">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">查询课程</button>
+                    </form>
+                </div>
+
+                <!-- 查询课程详情 -->
+                <div class="search-filters">
+                    <h3>查询课程详情</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_course_detail">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">查询详情</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 学分统计 -->
+            <div id="credit" class="tab-content">
+                <h2>学分统计</h2>
+                
+                <!-- 学分概览 -->
+                <div class="search-filters">
+                    <h3>学分概览</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_credit">
+                        <button type="submit" class="btn">查询学分统计</button>
+                    </form>
+                </div>
+
+                <!-- 详细学分报告 -->
+                <div class="search-filters">
+                    <h3>详细学分报告</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="get_credit_report">
+                        <button type="submit" class="btn">生成学分报告</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 个人设置 -->
+            <div id="profile" class="tab-content">
+                <h2>个人设置</h2>
+                
+                <!-- 更新个人信息 -->
+                <div class="search-filters">
+                    <h3>更新个人信息</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="update_profile">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>性别</label>
+                                <select name="gender" required>
+                                    <option value="">请选择</option>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>出生日期</label>
+                                <input type="date" name="birth_date" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">更新信息</button>
+                    </form>
+                </div>
+
+                <!-- 修改密码 -->
+                <div class="search-filters">
+                    <h3>修改密码</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="update_password">
+                        <div class="form-group">
+                            <label>旧密码</label>
+                            <input type="password" name="old_password" required>
+                        </div>
+                        <div class="form-group">
+                            <label>新密码</label>
+                            <input type="password" name="new_password" required>
+                        </div>
+                        <button type="submit" class="btn">修改密码</button>
+                    </form>
+                </div>
+            </div>
         </div>
+
+        <!-- 查询结果表格 -->
+        {% if results %}
+        <div class="results-section">
+            {% if results[0] and 'total_courses' in results[0] %}
+            <!-- 学分统计卡片 -->
+            <div class="stats-card">
+                <h3>学分统计概览</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ results[0]['total_courses'] or 0 }}</span>
+                        <span class="stat-label">总课程数</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ results[0]['earned_credits'] or 0 }}</span>
+                        <span class="stat-label">已获得学分</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ results[0]['total_attempted_credits'] or 0 }}</span>
+                        <span class="stat-label">总修读学分</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ results[0]['overall_gpa'] or 0 }}</span>
+                        <span class="stat-label">平均绩点</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ results[0]['passed_courses'] or 0 }}</span>
+                        <span class="stat-label">通过课程</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ results[0]['failed_courses'] or 0 }}</span>
+                        <span class="stat-label">未通过课程</span>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- 普通表格 -->
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        {% for key in results[0].keys() %}
+                        <th>{{ key }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results %}
+                    <tr>
+                        {% for value in row.values() %}
+                        <td>{{ value if value is not none else '未录入' }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     <script>
-        // 模态框控制脚本
-        document.getElementById('changePwdBtn').onclick = function() {
-            document.getElementById('pwdModal').style.display = 'block';
-        };
-        
-        document.getElementById('closeModal').onclick = function() {
-            document.getElementById('pwdModal').style.display = 'none';
-        };
-        
-        window.onclick = function(event) {
-            var modal = document.getElementById('pwdModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
+        function showTab(tabName) {
+            // 隐藏所有标签内容
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // 移除所有标签的活跃状态
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 设置选中标签为活跃状态
+            event.target.classList.add('active');
+        }
+
+        // 页面加载时自动显示概览信息
+        window.addEventListener('load', function() {
+            // 如果没有查询结果且在概览页面，自动提交概览查询
+            const activeTab = document.querySelector('.tab-content.active');
+            const hasResults = document.querySelector('.results-section');
+            
+            if (activeTab && activeTab.id === 'overview' && !hasResults) {
+                const overviewForm = activeTab.querySelector('form');
+                if (overviewForm) {
+                    overviewForm.submit();
+                }
             }
-        };
+        });
     </script>
 </body>
 </html>
