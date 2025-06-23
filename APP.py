@@ -35,7 +35,7 @@ def login():
                 else:
                     session['user'] = data['username']
                     session['role'] = data['role']
-                    print(f"[INFO] 用户 {session['user']} 登录成功")
+                    #print(f"[INFO] 用户 {session['user']} 登录成功")
                     return jsonify({"redirect_url": url_for(f"{data['role']}")})
         except pyodbc.ProgrammingError as pe:
             error_message = '数据库错误，请联系管理员'
@@ -45,13 +45,6 @@ def login():
             print(f"[数据库错误] {e}")
         return jsonify({'error_message': error_message})
     return render_template('login.html', error_message=error_message)
-
-
-# 登出按钮: 清除 session, 回到登录页面
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login'))
 
 
 # 学生页面
@@ -88,7 +81,7 @@ def teacher():
 # 管理员页面
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    print(f"[INFO] 管理员 {session['user']} 登录成功")
+    #print(f"[INFO] 管理员 {session['user']} 登录成功")
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
     
@@ -97,6 +90,13 @@ def admin():
     # 查询事务写在这里
     admin_action()
     return render_template('admin.html', user=session['user'])
+
+
+# 登出按钮: 清除 session, 回到登录页面
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':

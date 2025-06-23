@@ -1,93 +1,354 @@
-body { margin: 0; font-family: Arial, sans-serif; }
+/* ================= 全局样式 ================= */
+/* 设置页面基础样式 */
+body {
+    font-family: 'Arial', sans-serif;          /* 使用Arial字体 */
+    background-color: #f5f5f5;               /* 浅灰色背景 */
+    margin: 0;                                 /* 去除默认外边距 */
+    padding: 0;                                /* 去除默认内边距 */
+    min-height: 100vh;                         /* 最小高度为视口高度 */
+    display: flex;                             /* 启用flex布局 */
+    flex-direction: column;                    /* 垂直排列子元素 */
+    justify-content: center;                   /* 垂直居中内容 */
+    align-items: center;                       /* 水平居中内容 */
+    position: relative;                        /* 为固定页脚做准备 */
+    padding-top: 60px;                         /* 为顶部导航栏留出空间 */
+    padding-bottom: 60px;                      /* 为页脚留出空间 */
+    box-sizing: border-box;                    /* 确保padding不影响整体高度 */
+}
+
+
+/* ================= 登录页面样式 ================= */
+/* 主标题样式 */
+h1 {
+    color: #2c3e50;                          /* 深蓝色文字 */
+    margin-bottom: 30px;                       /* 底部间距30px */
+    text-align: center;                        /* 文字居中 */
+    width: auto;                               /* 宽度自适应 */
+}
+
+/* 登录表单容器 */
+.login-container {
+    background-color: white;                 /* 白色背景 */
+    padding: 30px;                             /* 内边距30px */
+    border-radius: 8px;                        /* 圆角8px */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);   /* 轻微阴影效果 */
+    width: 350px;                              /* 固定宽度350px */
+    max-width: 90%;                            /* 最大宽度为父容器的90% */
+    margin: 20px;                              /* 上下边距20px */
+}
+
+/* 登录表单标题 */
+h3 {
+    color: #2c3e50;                         /* 深蓝色文字 */
+    text-align: center;                       /* 文字居中 */
+    margin-bottom: 20px;                      /* 底部间距20px */
+}
+
+/* 输入框通用样式 */
+input[type="text"], 
+input[type="password"],
+select {
+    width: 100%;                              /* 宽度100%填满容器 */
+    padding: 12px;                            /* 内边距12px */
+    margin: 8px 0;                            /* 上下边距8px，左右0 */
+    border: 1px solid #ddd;                   /* 浅灰色边框 */
+    border-radius: 4px;                       /* 圆角4px */
+    box-sizing: border-box;                   /* 盒模型计算方式 */
+    font-size: 16px;                          /* 字体大小16px */
+}
+
+/* 提交按钮样式 */
+button[type="submit"] {
+    width: 100%;                              /* 宽度100%填满容器 */
+    background-color: #3498db;                /* 蓝色背景 */
+    color: white;                             /* 白色文字 */
+    padding: 14px;                            /* 内边距14px */
+    margin: 10px 0;                           /* 上下边距10px，左右0 */
+    border: none;                             /* 无边框 */
+    border-radius: 4px;                       /* 圆角4px */
+    cursor: pointer;                          /* 鼠标指针变为手形 */
+    font-size: 16px;                          /* 字体大小16px */
+    font-weight: bold;                        /* 加粗字体 */
+    transition: background-color 0.3s;          /* 背景色过渡动画0.3秒 */
+}
+
+/* 提交按钮悬停效果 */
+button[type="submit"]:hover {
+    background-color: #2980b9;                /* 悬停时变为深蓝色 */
+}
+
+/* 错误消息样式 */
+#error-message {
+    margin-top: 15px;                         /* 顶部间距15px */
+    text-align: center;                       /* 文字居中 */
+    font-size: 14px;                          /* 字体大小14px */
+    color: red;                               /* 红色文字(已在HTML中内联定义) */
+}
+
+
+
+/* ================= 用户页面样式 ================= */
+/* 顶部导航栏 */
 .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #1976d2;
-    color: #fff;
-    padding: 10px 30px;
+    background-color: #2c3e50;                /* 深蓝色背景 */
+    color: white;                             /* 白色文字 */
+    padding: 15px 30px;                       /* 上下内边距15px，左右内边距30px */
+    width: 100%;                              /* 宽度100% */
+    display: flex;                            /* 启用flex布局 */
+    justify-content: space-between;           /* 子元素两端对齐 */
+    align-items: center;                      /* 子元素垂直居中 */
+    position: fixed;                          /* 固定定位 */
+    top: 0;                                   /* 顶部对齐 */
+    left: 0;                                  /* 左边对齐 */
+    z-index: 1000;                            /* 层级较高，确保显示在其他元素上方 */
+    box-sizing: border-box;                   /* 防止padding导致溢出 */
 }
+
 .topbar .left {
-    font-size: 16px;
+    font-weight: bold;                        /* 加粗字体 */
 }
-.topbar .right a {
-    color: #fff;
-    margin-left: 20px;
-    text-decoration: none;
+
+.topbar .right {
+    display: flex;                            /* 启用flex布局 */
+    gap: 15px;                                /* 子元素间距15px */
+    align-items: center;                      /* 子元素垂直居中 */
 }
-.container {
-    max-width: 900px;
-    margin: 40px auto 60px auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px #eee;
+
+.topbar button, .topbar a {
+    background-color: #3498db;                /* 蓝色背景 */
+    color: white;                             /* 白色文字 */
+    border: none;                             /* 无边框 */
+    padding: 8px 15px;                        /* 上下内边距8px，左右内边距15px */
+    border-radius: 4px;                       /* 圆角4px */
+    cursor: pointer;                          /* 鼠标指针变为手形 */
+    text-decoration: none;                    /* 无下划线 */
+    font-size: 14px;                          /* 字体大小14px */
+    transition: background-color 0.3s;        /* 背景色过渡动画0.3秒 */
 }
+
+.topbar button:hover, .topbar a:hover {
+    background-color: #2980b9;                /* 悬停时变为深蓝色 */
+}
+
+/* 主要内容区域 */
+.main-container {
+    margin-top: 80px;                         /* 为顶部导航栏留出空间 */
+    width: 90%;                               /* 宽度90% */
+    max-width: 1200px;                        /* 最大宽度1200px */
+    background: white;                        /* 白色背景 */
+    border-radius: 8px;                       /* 圆角8px */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);   /* 阴影效果 */
+    padding: 25px;                            /* 内边距25px */
+    margin-bottom: 40px;                      /* 底部间距40px */
+    position: relative;                       /* 相对定位 */
+    min-height: 60vh;                         /* 最小高度为视口的60% */
+    overflow: hidden;                         /* 防止内容溢出 */
+}
+
+/* 内容标题样式 */
+.main-container h2 {
+    color: #2c3e50;                           /* 深蓝色文字 */
+    margin-bottom: 20px;                      /* 底部间距20px */
+    padding-bottom: 10px;                     /* 底部内边距10px */
+    border-bottom: 2px solid #f2f2f2;         /* 底部边框线 */
+}
+
+/* 内容区域响应式设计 */
+@media (max-width: 768px) {
+    .main-container {
+        width: 95%;                           /* 在小屏幕上增加宽度 */
+        padding: 15px;                        /* 减少内边距 */
+        margin-top: 70px;                     /* 调整顶部间距 */
+    }
+}
+
+/* 内容卡片样式 */
+.content-card {
+    background: #f9f9f9;                      /* 浅灰色背景 */
+    border-radius: 6px;                       /* 圆角6px */
+    padding: 20px;                            /* 内边距20px */
+    margin-bottom: 20px;                       /* 底部间距20px */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);   /* 轻微阴影 */
+    transition: all 0.3s ease;                /* 过渡效果 */
+}
+
+.content-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);    /* 悬停时阴影加深 */
+}
+
+/* 内容区域内的按钮样式 */
+.main-container .btn {
+    background-color: #3498db;                /* 蓝色背景 */
+    color: white;                             /* 白色文字 */
+    border: none;                             /* 无边框 */
+    padding: 10px 20px;                       /* 内边距 */
+    border-radius: 4px;                       /* 圆角4px */
+    cursor: pointer;                          /* 手形指针 */
+    transition: background-color 0.3s;        /* 过渡效果 */
+    font-size: 14px;                          /* 字体大小 */
+    margin: 5px;                              /* 外边距 */
+}
+
+.main-container .btn:hover {
+    background-color: #2980b9;                /* 悬停时深蓝色 */
+}
+
+/* 内容区域内的警告框样式 */
+.alert {
+    padding: 15px;                            /* 内边距 */
+    margin-bottom: 20px;                      /* 底部间距 */
+    border-radius: 4px;                        /* 圆角 */
+    font-size: 14px;                           /* 字体大小 */
+}
+
+.alert-success {
+    background-color: #dff0d8;                /* 浅绿色背景 */
+    color: #3c763d;                           /* 深绿色文字 */
+}
+
+.alert-info {
+    background-color: #d9edf7;                /* 浅蓝色背景 */
+    color: #31708f;                           /* 深蓝色文字 */
+}
+
+.alert-warning {
+    background-color: #fcf8e3;                /* 浅黄色背景 */
+    color: #8a6d3b;                           /* 深黄色文字 */
+}
+
+.alert-danger {
+    background-color: #f2dede;                /* 浅红色背景 */
+    color: #a94442;                           /* 深红色文字 */
+}
+
+
+/* 搜索栏 */
 .search-bar {
-    display: flex;
-    align-items: center;
-    margin-bottom: 25px;
+    display: flex;                            /* 启用flex布局 */
+    gap: 10px;                                /* 子元素间距10px */
+    margin-bottom: 20px;                      /* 底部间距20px */
+    flex-wrap: wrap;                          /* 子元素换行 */
 }
-.search-bar select, .search-bar input {
-    margin-right: 15px;
-    padding: 6px 10px;
-    font-size: 15px;
+
+.search-bar input, .search-bar select {
+    padding: 10px;                            /* 内边距10px */
+    border: 1px solid #ddd;                   /* 浅灰色边框 */
+    border-radius: 4px;                       /* 圆角4px */
+    flex-grow: 1;                             /* 子元素扩展以填满剩余空间 */
+    min-width: 200px;                         /* 最小宽度200px */
 }
+
 .search-bar button {
-    padding: 6px 18px;
-    background: #1976d2;
-    color: #fff;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+    background-color: #3498db;                /* 蓝色背景 */
+    color: white;                             /* 白色文字 */
+    border: none;                             /* 无边框 */
+    padding: 10px 20px;                       /* 上下内边距10px，左右内边距20px */
+    border-radius: 4px;                       /* 圆角4px */
+    cursor: pointer;                          /* 鼠标指针变为手形 */
+    transition: background-color 0.3s;        /* 背景色过渡动画0.3秒 */
 }
+
+.search-bar button:hover {
+    background-color: #2980b9;                /* 悬停时变为深蓝色 */
+}
+
+/* 表格样式 */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+    width: 100%;                              /* 宽度100% */
+    border-collapse: collapse;                /* 合并边框 */
+    margin-top: 20px;                         /* 顶部间距20px */
 }
+
 th, td {
-    border: 1px solid #ddd;
-    padding: 10px 8px;
-    text-align: center;
+    padding: 12px 15px;                       /* 上下内边距12px，左右内边距15px */
+    text-align: left;                         /* 文字左对齐 */
+    border-bottom: 1px solid #ddd;            /* 底部边框 */
 }
+
 th {
-    background: #f5f5f5;
+    background-color: #f2f2f2;                /* 浅灰色背景 */
+    font-weight: bold;                        /* 加粗字体 */
+    color: #333;                              /* 深灰色文字 */
 }
+
+tr:hover {
+    background-color: #f5f5f5;                /* 悬停时变为浅灰色背景 */
+}
+
+/* 页脚 */
 .footer {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: #1976d2;
-    color: #fff;
-    text-align: center;
-    padding: 12px 0;
-    font-size: 16px;
-    letter-spacing: 2px;
+    text-align: center;                       /* 文字居中 */
+    padding: 20px;                            /* 内边距20px */
+    color: #666;                              /* 浅灰色文字 */
+    font-size: 14px;                          /* 字体大小14px */
+    width: 100%;                              /* 宽度100% */
+    background-color: #f5f5f5;                /* 浅灰色背景 */
+    position: fixed;                          /* 固定定位 */
+    bottom: 0;                                /* 底部对齐 */
+    left: 0;                                  /* 左边对齐 */
+    z-index: 1000;                            /* 层级较高，确保显示在其他元素上方 */
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);    /* 阴影效果 */
+    box-sizing: border-box;                   /* 防止padding导致溢出 */
 }
 
-
-
-
-/* 简单的模态弹窗样式 */
+/* 密码修改模态框 */
 .modal {
-    position: fixed;
-    z-index: 999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    overflow: auto;
-    background: rgba(0,0,0,0.4);
+    display: none;                            /* 默认隐藏 */
+    position: fixed;                          /* 固定定位 */
+    z-index: 2000;                            /* 层级更高，确保显示在其他元素上方 */
+    left: 0;                                  /* 左边对齐 */
+    top: 0;                                   /* 顶部对齐 */
+    width: 100%;                              /* 宽度100% */
+    height: 100%;                             /* 高度100% */
+    background-color: rgba(0,0,0,0.5);        /* 半透明白色背景 */
 }
+
 .modal-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    border-radius: 5px;
-    width: 300px;
-    position: relative;
+    background-color: white;                   /* 白色背景 */
+    margin: 10% auto;                         /* 上下外边距10%，左右自动居中 */
+    padding: 25px;                            /* 内边距25px */
+    border-radius: 8px;                       /* 圆角8px */
+    width: 400px;                             /* 固定宽度400px */
+    max-width: 90%;                           /* 最大宽度为父容器的90% */
+    position: relative;                       /* 相对定位 */
 }
+
 .close {
-    position: absolute;
-    right: 10px; top: 10px;
-    font-size: 24px;
-    cursor: pointer;
+    position: absolute;                       /* 绝对定位 */
+    right: 15px;                              /* 右边15px */
+    top: 10px;                                /* 上边10px */
+    font-size: 24px;                          /* 字体大小24px */
+    cursor: pointer;                          /* 鼠标指针变为手形 */
+}
+
+.modal-content form {
+    display: flex;                            /* 启用flex布局 */
+    flex-direction: column;                    /* 垂直排列子元素 */
+    gap: 15px;                                /* 子元素间距15px */
+}
+
+.modal-content label {
+    font-weight: bold;                        /* 加粗字体 */
+    margin-bottom: -10px;                     /* 底部间距-10px */
+}
+
+.modal-content input {
+    padding: 10px;                            /* 内边距10px */
+    border: 1px solid #ddd;                   /* 浅灰色边框 */
+    border-radius: 4px;                       /* 圆角4px */
+}
+
+.modal-content button {
+    background-color: #3498db;                /* 蓝色背景 */
+    color: white;                             /* 白色文字 */
+    border: none;                             /* 无边框 */
+    padding: 12px;                            /* 内边距12px */
+    border-radius: 4px;                       /* 圆角4px */
+    cursor: pointer;                          /* 鼠标指针变为手形 */
+    margin-top: 10px;                         /* 顶部间距10px */
+    transition: background-color 0.3s;        /* 背景色过渡动画0.3秒 */
+}
+
+.modal-content button:hover {
+    background-color: #2980b9;                /* 悬停时变为深蓝色 */
 }
