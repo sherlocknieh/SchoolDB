@@ -1,4 +1,5 @@
 USE SchoolDB;
+GO
 
 /*
 sp_insert_grade
@@ -30,7 +31,6 @@ sp_get_grade_status_teacher
 功能：生成教师成绩录入进度报告，统计每门课程的选课人数、已录入成绩人数、未录入人数和完成率
 */
 
-GO
 --教师
 --修改成绩，可以插入，也可以更新
 CREATE PROCEDURE sp_insert_grade
@@ -74,8 +74,9 @@ BEGIN
         INSERT (student_id, course_id, semester, score)
         VALUES (source.student_id, source.course_id, source.semester, source.score);
 END;
-
 GO
+
+
 -- 教师删除某一个学生的成绩
 CREATE PROCEDURE sp_delete_grade
     @teacher_id VARCHAR(10),
@@ -140,9 +141,8 @@ BEGIN
         RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
     END CATCH
 END
-
-
 GO
+
 
 -- 存储过程：教师更新自己的个人信息 
 CREATE PROCEDURE sp_teacher_update_profile
@@ -175,9 +175,9 @@ BEGIN
         THROW 50009, @error_msg2, 1;
     END CATCH
 END;
-
-
 GO
+
+
 -- 以下为查询信息
 CREATE PROCEDURE sp_get_grades_teacher
     @TeacherId VARCHAR(10),
@@ -252,8 +252,9 @@ BEGIN
         AND (@CourseId IS NULL OR g.course_id = @CourseId)
         AND (@StudentId IS NULL OR g.student_id = @StudentId);
 END
-
 GO
+
+
 CREATE PROCEDURE sp_get_tc_teacher
     @TeacherId VARCHAR(10),
     @Semester VARCHAR(20) = NULL
@@ -278,6 +279,8 @@ BEGIN
     GROUP BY tc.course_id, c.name, CAST(c.description AS NVARCHAR(MAX)), c.credits, tc.semester
     ORDER BY tc.semester DESC, tc.course_id;
 END
+GO
+
 
 CREATE PROCEDURE sp_get_sc_teacher
     @TeacherId VARCHAR(10),
@@ -309,8 +312,9 @@ BEGIN
         AND sc.semester = @Semester
     ORDER BY s.student_id;
 END
-
 GO
+
+
 CREATE PROCEDURE sp_get_grade_status_teacher
     @TeacherId VARCHAR(10),
     @Semester VARCHAR(20) = NULL

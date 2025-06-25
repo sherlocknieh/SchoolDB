@@ -1,10 +1,15 @@
+use SchoolDB;
+GO
+
+
 --此处为公用，所有角色都可以调用，同时保持触发器作为约束
 /*
 sp_update_password - 修改用户密码
 sp_get_course_detail_public - 查询课程详细信息
 sp_get_course_info_public - 课程信息查询
 */
-GO
+
+
 -- 存储过程：任何用户修改自己的密码
 CREATE PROCEDURE sp_update_password
     @p_username VARCHAR(50),
@@ -39,8 +44,9 @@ BEGIN
         THROW 50021, @error_msg, 1;
     END CATCH
 END;
-
 GO
+
+
 --查询课程信息
 CREATE PROCEDURE sp_get_course_detail_public
     @course_id VARCHAR(10)
@@ -98,8 +104,9 @@ BEGIN
                       AND sc.semester = g.semester
     WHERE tc.course_id = @course_id;
 END;
-
 GO
+
+
 CREATE PROCEDURE sp_get_course_info_public
     @course_id VARCHAR(10) = NULL,          
     @course_name VARCHAR(100) = NULL,        
@@ -171,9 +178,9 @@ BEGIN
         AND (@min_credits IS NULL OR c.credits >= @min_credits)
         AND (@max_credits IS NULL OR c.credits <= @max_credits);
 END;
-
-
 GO
+
+
 --触发器设置
 --使用存储过程来实现对表的插入删除，所以触发器应该用来检查违规操作
 CREATE TRIGGER trg_prevent_drop_with_grades

@@ -10,7 +10,7 @@ GO
 CREATE DATABASE SchoolDB;   -- 创建新的 School 数据库
 GO
 
-USE SchoolDB;   -- 使用 School 数据库
+USE SchoolDB;   -- 切换到 SchoolDB 数据库
 GO
 
 -- 用户表（统一存储学生、教师、管理员）
@@ -81,8 +81,8 @@ CREATE TABLE Grades (
     FOREIGN KEY (student_id, course_id, semester) REFERENCES SC(student_id, course_id, semester) ON DELETE CASCADE,
     PRIMARY KEY (student_id, course_id, semester)
 );
-
 GO
+
 
 -- 创建初始数据
 INSERT INTO Users (user_id, username, [password], role)
@@ -100,19 +100,16 @@ INSERT INTO Teachers (teacher_id, name, department, introduction)
 VALUES ('t0001', '教师1', '数学学院', NULL),
        ('t0002', '教师2', '计算机学院', NULL);
 
-
 INSERT INTO Courses (course_id, name, description, credits)
 VALUES ('c0001', '微积分', '微积分课程', 4),
        ('c0002', '数据结构', '数据结构课程', 3),
        ('c0003', '操作系统', '操作系统课程', 3);
-
 
 INSERT INTO TC (teacher_id, course_id, semester)
 VALUES ('t0001', 'c0001', '2022秋'),
        ('t0001', 'c0002', '2023春'),
        ('t0002', 'c0002', '2023春'),
        ('t0002', 'c0003', '2023秋');
-
 
 INSERT INTO SC (student_id, teacher_id, course_id, semester)
 VALUES ('s0001', 't0001', 'c0001', '2022秋'),
@@ -129,9 +126,20 @@ VALUES ('s0001', 'c0001', '2022秋', 80),
        ('s0002', 'c0001', '2022秋', 70),
        ('s0002', 'c0002', '2023春', 80),
        ('s0002', 'c0003', '2023秋', 90);
+GO
+
+
+-- 验证数据
+select * from Users;
+select * from Students;
+select * from Teachers;
+select * from Courses;
+select * from Grades;
+select * from TC; -- Teacher Course
+select * from SC; -- Student Course
+GO
 
 
 -- 断开连接
-GO
 USE master;
 GO

@@ -1,4 +1,5 @@
 USE SchoolDB;
+GO
 /*
 sp_student_select_course
 参数：学生用户名、教师ID、课程ID、学期
@@ -40,9 +41,8 @@ sp_get_overview
 参数：学生ID
 功能：提供学生完整概览，包括个人信息、学分统计和最近课程记录
 */
---学生
-GO
---选课
+
+--学生选课
 CREATE PROCEDURE sp_student_select_course
     @p_student_username VARCHAR(50),
     @p_teacher_id VARCHAR(10),
@@ -84,8 +84,9 @@ BEGIN
         END
     END CATCH
 END;
-
 GO
+
+
 -- 存储过程：学生更新自己的个人信息
 CREATE PROCEDURE sp_student_update_profile
     @p_student_username VARCHAR(50),
@@ -117,8 +118,8 @@ BEGIN
         THROW 50015, @error_msg2, 1;
     END CATCH
 END;
-
 GO
+
 
 -- 存储过程：学生退选课程
 CREATE PROCEDURE sp_student_drop_course
@@ -158,9 +159,10 @@ BEGIN
         THROW 50018, @error_msg, 1;
     END CATCH
 END;
+GO
+
 
 -- 以下为三个查询成绩的方式
-GO
 CREATE PROCEDURE sp_get_grades_by_semester
     @StudentId VARCHAR(10),
     @Semester VARCHAR(20)
@@ -182,8 +184,9 @@ BEGIN
     WHERE g.student_id = @StudentId AND g.semester = @Semester
     ORDER BY c.course_id;
 END
-
 GO
+
+
 CREATE PROCEDURE sp_get_grades_by_course
     @StudentId VARCHAR(10),
     @CourseId VARCHAR(10)
@@ -205,8 +208,9 @@ BEGIN
     WHERE g.student_id = @StudentId AND g.course_id = @CourseId
     ORDER BY g.semester DESC;
 END
-
 GO
+
+
 CREATE PROCEDURE sp_get_all_grades
     @StudentId VARCHAR(10)
 AS
@@ -231,9 +235,10 @@ BEGIN
     WHERE g.student_id = @StudentId
     ORDER BY g.semester DESC, c.course_id;
 END
+GO
+
 
 -- 以下为统计功能的实现
-GO
 CREATE PROCEDURE sp_get_courses
     @StudentId VARCHAR(10)
 AS
@@ -258,8 +263,9 @@ BEGIN
     WHERE g.student_id = @StudentId
     ORDER BY g.semester DESC, c.course_id;
 END
-
 GO
+
+
 CREATE PROCEDURE sp_get_credit
     @StudentId VARCHAR(10)
 AS
@@ -275,8 +281,9 @@ BEGIN
     INNER JOIN Courses c ON g.course_id = c.course_id
     WHERE g.student_id = @StudentId;
 END
-
 GO
+
+
 CREATE PROCEDURE sp_get_credit_report
     @StudentId VARCHAR(10)
 AS
@@ -321,8 +328,9 @@ BEGIN
         END
     ORDER BY MIN(g.score) DESC;
 END
-
 GO
+
+
 CREATE PROCEDURE sp_get_overview
     @StudentId VARCHAR(10)
 AS
