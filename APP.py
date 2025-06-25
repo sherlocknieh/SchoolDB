@@ -289,12 +289,170 @@ def admin():
     #print(f"[INFO] 管理员 {session['user']} 登录成功")
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
-    
+
     # 登录成功
     from modules.admin import admin_action       # 管理员数据库操作函数
-    # 查询事务写在这里
-    admin_action()
-    return render_template('admin.html', user=session['user'])
+    results = []
+    message = ''
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'add_user':
+            result = admin_action('add_user',
+                user_id=request.form.get('user_id'),
+                username=request.form.get('username'),
+                password=request.form.get('password'),
+                role=request.form.get('role'),
+                name=request.form.get('name'),
+                gender=request.form.get('gender') or None,
+                birth_date=request.form.get('birth_date') or None,
+                department=request.form.get('department') or None,
+                introduction=request.form.get('introduction') or None
+            )
+            message = result['message']
+            
+        elif action == 'delete_user':
+            result = admin_action('delete_user',
+                username=request.form.get('username')
+            )
+            message = result['message']
+            if result['success']:
+                results = result.get('data', [])
+                
+        elif action == 'add_course':
+            result = admin_action('add_course',
+                course_id=request.form.get('course_id'),
+                name=request.form.get('course_name'),
+                description=request.form.get('description'),
+                credits=int(request.form.get('credits'))
+            )
+            message = result['message']
+            
+        elif action == 'delete_course':
+            result = admin_action('delete_course',
+                course_id=request.form.get('course_id')
+            )
+            message = result['message']
+            if result['success']:
+                results = result.get('data', [])
+                
+        elif action == 'add_tc':
+            result = admin_action('add_tc',
+                teacher_id=request.form.get('teacher_id'),
+                course_id=request.form.get('course_id'),
+                semester=request.form.get('semester')
+            )
+            message = result['message']
+            
+        elif action == 'delete_tc':
+            result = admin_action('delete_tc',
+                teacher_id=request.form.get('teacher_id'),
+                course_id=request.form.get('course_id'),
+                semester=request.form.get('semester')
+            )
+            message = result['message']
+            if result['success']:
+                results = result.get('data', [])
+                
+        elif action == 'get_user_info':
+            result = admin_action('get_user_info',
+                username=request.form.get('username')
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_grades_admin':
+            result = admin_action('get_grades_admin',
+                username=request.form.get('username')
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_system_statistics':
+            result = admin_action('get_system_statistics')
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_course_statistics':
+            result = admin_action('get_course_statistics',
+                semester=request.form.get('semester') or None,
+                course_id=request.form.get('course_id') or None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_semester_statistics':
+            result = admin_action('get_semester_statistics',
+                semester=request.form.get('semester') or None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_teacher_statistics':
+            result = admin_action('get_teacher_statistics',
+                semester=request.form.get('semester') or None,
+                teacher_id=request.form.get('teacher_id') or None,
+                department=request.form.get('department') or None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_student_statistics':
+            result = admin_action('get_student_statistics',
+                student_id=request.form.get('student_id') or None,
+                semester=request.form.get('semester') or None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'update_password':
+            result = admin_action('update_password',
+                username=request.form.get('username'),
+                old_password=request.form.get('old_password'),
+                new_password=request.form.get('new_password')
+            )
+            message = result['message']
+            
+        elif action == 'get_course_info':
+            result = admin_action('get_course_info',
+                course_id=request.form.get('course_id') or None,
+                course_name=request.form.get('course_name') or None,
+                teacher_name=request.form.get('teacher_name') or None,
+                semester=request.form.get('semester') or None,
+                min_credits=int(request.form.get('min_credits')) if request.form.get('min_credits') else None,
+                max_credits=int(request.form.get('max_credits')) if request.form.get('max_credits') else None
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+                
+        elif action == 'get_course_detail':
+            result = admin_action('get_course_detail',
+                course_id=request.form.get('course_id')
+            )
+            if result['success']:
+                results = result['data']
+            else:
+                message = result['message']
+    
+    return render_template('admin.html', user=session['user'], results=results, message=message)
+
 
 
 # 登出按钮: 清除 session, 回到登录页面

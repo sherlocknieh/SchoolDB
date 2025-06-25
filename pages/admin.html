@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <title>管理员主页</title>
@@ -16,265 +17,498 @@
 <body>
     <header class="header">
         <nav class="nav">
-            <h1>管理员后台</h1>
+            <h1>管理员系统</h1>
             <div class="nav-links">
                 <span>欢迎，{{ user }} 管理员</span>
                 <a href="{{ url_for('logout') }}">登出</a>
             </div>
         </nav>
     </header>
+
     <div class="container">
+        {% if message %}
+            <div class="message {% if '成功' in message %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endif %}
+        
         <div class="tab-container">
             <div class="tabs">
-                <button class="tab active" onclick="showTab('courses')">课程管理</button>
-                <button class="tab" onclick="showTab('teachers')">教师管理</button>
-                <button class="tab" onclick="showTab('students')">学生管理</button>
-                <button class="tab" onclick="showTab('grades')">成绩查询</button>
-                <button class="tab" onclick="showTab('users')">用户权限</button>
-                <button class="tab" onclick="showTab('password')">修改密码</button>
+                <button class="tab active" onclick="showTab('users')">用户管理</button>
+                <button class="tab" onclick="showTab('courses')">课程管理</button>
+                <button class="tab" onclick="showTab('teaching')">教学任务</button>
+                <button class="tab" onclick="showTab('query')">信息查询</button>
+                <button class="tab" onclick="showTab('statistics')">统计分析</button>
+                <button class="tab" onclick="showTab('settings')">系统设置</button>
+                <button class="tab" onclick="showTab('results')" id="resultsTab" style="display: none;">查询结果</button>
             </div>
+
+            <!-- 用户管理 -->
+            <div id="users" class="tab-content active">
+                <h2>用户管理</h2>
+                
+                <!-- 添加用户 -->
+                <div class="search-filters">
+                    <h3>添加用户</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="add_user">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>用户ID</label>
+                                <input type="text" name="user_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>用户名</label>
+                                <input type="text" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label>密码</label>
+                                <input type="password" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>角色</label>
+                                <select name="role" required onchange="toggleUserFields(this.value)">
+                                    <option value="">请选择角色</option>
+                                    <option value="student">学生</option>
+                                    <option value="teacher">教师</option>
+                                    <option value="admin">管理员</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>姓名</label>
+                                <input type="text" name="name" required>
+                            </div>
+                        </div>
+                        
+                        <!-- 学生特有字段 -->
+                        <div id="student-fields" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>性别</label>
+                                    <select name="gender">
+                                        <option value="">请选择</option>
+                                        <option value="男">男</option>
+                                        <option value="女">女</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>出生日期</label>
+                                    <input type="date" name="birth_date">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 教师特有字段 -->
+                        <div id="teacher-fields" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>所属部门</label>
+                                    <input type="text" name="department">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>个人简介</label>
+                                <textarea name="introduction" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">添加用户</button>
+                    </form>
+                </div>
+
+                <!-- 删除用户 -->
+                <div class="search-filters">
+                    <h3>删除用户</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="delete_user">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>用户名</label>
+                                <input type="text" name="username" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-danger">删除用户</button>
+                    </form>
+                </div>
+            </div>
+
             <!-- 课程管理 -->
-            <div id="courses" class="tab-content active">
+            <div id="courses" class="tab-content">
                 <h2>课程管理</h2>
-                <div class="section">
-                    <h3>查询课程</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="课程ID">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="课程名称">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="教师姓名">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="学期">
-                        </div>
-                        <button type="submit" class="btn">查询</button>
-                    </form>
-                </div>
-                <div class="section">
+                
+                <!-- 添加课程 -->
+                <div class="search-filters">
                     <h3>添加/更新课程</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="课程名称" required>
+                    <form method="post">
+                        <input type="hidden" name="action" value="add_course">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>课程名称</label>
+                                <input type="text" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>学分</label>
+                                <input type="number" name="credits" min="1" max="10" required>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <input type="number" placeholder="学分" min="1" required>
+                            <label>课程描述</label>
+                            <textarea name="description" rows="4"></textarea>
                         </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="教师ID" required>
+                        <button type="submit" class="btn btn-success">添加课程</button>
+                    </form>
+                </div>
+
+                <!-- 删除课程 -->
+                <div class="search-filters">
+                    <h3>删除课程</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="delete_course">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="学期" required>
+                        <button type="submit" class="btn btn-danger">删除课程</button>
+                    </form>
+                </div>
+
+                <!-- 查询课程信息 -->
+                <div class="search-filters">
+                    <h3>查询课程信息</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_course_info">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>课程ID（可选）</label>
+                                <input type="text" name="course_id" placeholder="留空查询所有">
+                            </div>
+                            <div class="form-group">
+                                <label>课程名称（可选）</label>
+                                <input type="text" name="course_name" placeholder="支持模糊查询">
+                            </div>
+                            <div class="form-group">
+                                <label>教师姓名（可选）</label>
+                                <input type="text" name="teacher_name" placeholder="支持模糊查询">
+                            </div>
+                            <div class="form-group">
+                                <label>学期（可选）</label>
+                                <input type="text" name="semester" placeholder="例：2024春">
+                            </div>
+                            <div class="form-group">
+                                <label>最低学分</label>
+                                <input type="number" name="min_credits" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>最高学分</label>
+                                <input type="number" name="max_credits" min="1">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="上课时间">
+                        <button type="submit" class="btn">查询课程</button>
+                    </form>
+                </div>
+
+                <!-- 查询课程详情 -->
+                <div class="search-filters">
+                    <h3>查询课程详情</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_course_detail">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="上课地点">
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <textarea placeholder="课程描述"></textarea>
-                        </div>
-                        <button type="submit" class="btn">提交</button>
-                        <button type="reset" class="btn btn-danger">清空</button>
+                        <button type="submit" class="btn">查询详情</button>
                     </form>
                 </div>
             </div>
-            <!-- 教师管理 -->
-            <div id="teachers" class="tab-content">
-                <h2>教师管理</h2>
-                <div class="section">
-                    <h3>查询教师</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="教师ID">
+
+            <!-- 教学任务管理 -->
+            <div id="teaching" class="tab-content">
+                <h2>教学任务管理</h2>
+                
+                <!-- 添加教学任务 -->
+                <div class="search-filters">
+                    <h3>添加教学任务</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="add_tc">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>教师ID</label>
+                                <input type="text" name="teacher_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>学期</label>
+                                <input type="text" name="semester" placeholder="例：2024春" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="教师姓名">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="院系">
-                        </div>
-                        <button type="submit" class="btn">查询</button>
+                        <button type="submit" class="btn btn-success">添加教学任务</button>
                     </form>
                 </div>
-                <div class="section">
-                    <h3>添加/更新教师</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="姓名" required>
+
+                <!-- 删除教学任务 -->
+                <div class="search-filters">
+                    <h3>删除教学任务</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="delete_tc">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>教师ID</label>
+                                <input type="text" name="teacher_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>课程ID</label>
+                                <input type="text" name="course_id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>学期</label>
+                                <input type="text" name="semester" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="院系" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="职称">
-                        </div>
-                        <div class="form-group">
-                            <input type="email" placeholder="邮箱">
-                        </div>
-                        <div class="form-group">
-                            <input type="tel" placeholder="电话">
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <textarea placeholder="个人简介"></textarea>
-                        </div>
-                        <button type="submit" class="btn">提交</button>
-                        <button type="reset" class="btn btn-danger">清空</button>
-                    </form>
-                </div>
-            </div>
-            <!-- 学生管理 -->
-            <div id="students" class="tab-content">
-                <h2>学生管理</h2>
-                <div class="section">
-                    <h3>查询学生</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="学号">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="姓名">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="专业">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="班级">
-                        </div>
-                        <button type="submit" class="btn">查询</button>
-                    </form>
-                </div>
-                <div class="section">
-                    <h3>添加/更新学生</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="姓名" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="专业" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="班级" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="性别">
-                        </div>
-                        <div class="form-group">
-                            <input type="date" placeholder="出生日期">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="入学年份">
-                        </div>
-                        <button type="submit" class="btn">提交</button>
-                        <button type="reset" class="btn btn-danger">清空</button>
+                        <button type="submit" class="btn btn-danger">删除教学任务</button>
                     </form>
                 </div>
             </div>
-            <!-- 成绩查询 -->
-            <div id="grades" class="tab-content">
-                <h2>成绩查询</h2>
-                <div class="section">
-                    <h3>查询成绩</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="学号">
+
+            <!-- 信息查询 -->
+            <div id="query" class="tab-content">
+                <h2>信息查询</h2>
+                
+                <!-- 查询用户信息 -->
+                <div class="search-filters">
+                    <h3>查询用户信息</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_user_info">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>用户名</label>
+                                <input type="text" name="username" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="课程ID">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="学期">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="教师ID">
-                        </div>
-                        <button type="submit" class="btn">查询</button>
+                        <button type="submit" class="btn">查询用户信息</button>
                     </form>
                 </div>
-                <div class="section">
-                    <div class="no-results">暂无查询结果</div>
-                </div>
-            </div>
-            <!-- 用户权限 -->
-            <div id="users" class="tab-content">
-                <h2>用户权限管理</h2>
-                <div class="section">
-                    <h3>查询用户</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="用户名">
+
+                <!-- 查询学生成绩 -->
+                <div class="search-filters">
+                    <h3>查询学生成绩</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_grades_admin">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>学生用户名</label>
+                                <input type="text" name="username" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <select>
-                                <option value="">所有角色</option>
-                                <option value="admin">管理员</option>
-                                <option value="teacher">教师</option>
-                                <option value="student">学生</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn">查询</button>
-                    </form>
-                </div>
-                <div class="section">
-                    <h3>修改用户权限</h3>
-                    <form class="form-row">
-                        <div class="form-group">
-                            <input type="text" placeholder="用户名" readonly>
-                        </div>
-                        <div class="form-group">
-                            <select required>
-                                <option value="">选择角色</option>
-                                <option value="admin">管理员</option>
-                                <option value="teacher">教师</option>
-                                <option value="student">学生</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <select required>
-                                <option value="active">激活</option>
-                                <option value="inactive">禁用</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn">更新权限</button>
+                        <button type="submit" class="btn">查询成绩</button>
                     </form>
                 </div>
             </div>
-            <!-- 修改密码 -->
-            <div id="password" class="tab-content">
-                <h2>修改密码</h2>
-                <div class="section">
-                    <form class="form-row">
+
+            <!-- 统计分析 -->
+            <div id="statistics" class="tab-content">
+                <h2>统计分析</h2>
+                
+                <!-- 系统统计 -->
+                <div class="search-filters">
+                    <h3>系统统计</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_system_statistics">
+                        <button type="submit" class="btn">查看系统统计</button>
+                    </form>
+                </div>
+
+                <!-- 课程统计 -->
+                <div class="search-filters">
+                    <h3>课程统计</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_course_statistics">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>学期（可选）</label>
+                                <input type="text" name="semester" placeholder="留空查询所有学期">
+                            </div>
+                            <div class="form-group">
+                                <label>课程ID（可选）</label>
+                                <input type="text" name="course_id" placeholder="留空查询所有课程">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">查看课程统计</button>
+                    </form>
+                </div>
+
+                <!-- 学期统计 -->
+                <div class="search-filters">
+                    <h3>学期统计</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_semester_statistics">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>学期（可选）</label>
+                                <input type="text" name="semester" placeholder="留空查询所有学期">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">查看学期统计</button>
+                    </form>
+                </div>
+
+                <!-- 教师统计 -->
+                <div class="search-filters">
+                    <h3>教师统计</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_teacher_statistics">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>学期（可选）</label>
+                                <input type="text" name="semester" placeholder="留空查询所有学期">
+                            </div>
+                            <div class="form-group">
+                                <label>教师ID（可选）</label>
+                                <input type="text" name="teacher_id" placeholder="留空查询所有教师">
+                            </div>
+                            <div class="form-group">
+                                <label>部门（可选）</label>
+                                <input type="text" name="department" placeholder="留空查询所有部门">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">查看教师统计</button>
+                    </form>
+                </div>
+
+                <!-- 学生统计 -->
+                <div class="search-filters">
+                    <h3>学生统计</h3>
+                    <form method="post" onsubmit="prepareForResults()">
+                        <input type="hidden" name="action" value="get_student_statistics">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>学生ID（可选）</label>
+                                <input type="text" name="student_id" placeholder="留空查询所有学生">
+                            </div>
+                            <div class="form-group">
+                                <label>学期（可选）</label>
+                                <input type="text" name="semester" placeholder="留空查询所有学期">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">查看学生统计</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 系统设置 -->
+            <div id="settings" class="tab-content">
+                <h2>系统设置</h2>
+                
+                <!-- 修改密码 -->
+                <div class="search-filters">
+                    <h3>修改密码</h3>
+                    <form method="post">
+                        <input type="hidden" name="action" value="update_password">
                         <div class="form-group">
-                            <input type="password" placeholder="当前密码" required>
+                            <label>旧密码</label>
+                            <input type="password" name="old_password" required>
                         </div>
                         <div class="form-group">
-                            <input type="password" placeholder="新密码" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="password" placeholder="确认新密码" required>
+                            <label>新密码</label>
+                            <input type="password" name="new_password" required>
                         </div>
                         <button type="submit" class="btn">修改密码</button>
                     </form>
                 </div>
             </div>
+
+            <!-- 查询结果 -->
+            <div id="results" class="tab-content">
+                <h2>查询结果</h2>
+                
+                {% if results %}
+                    <div class="results-notice">
+                        <strong>查询成功！</strong> 找到 {{ results|length }} 条记录
+                    </div>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                {% for key in results[0].keys() %}
+                                <th>{{ key }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                            <tr>
+                                {% for value in row.values() %}
+                                <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="no-results">
+                        <p>暂无查询结果</p>
+                        <p>请先在其他选项卡中执行查询操作</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
+
     <script>
         function showTab(tabName) {
             // 隐藏所有标签内容
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.remove('active'));
+            
             // 移除所有标签的活跃状态
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(tab => tab.classList.remove('active'));
+            
             // 显示选中的标签内容
             document.getElementById(tabName).classList.add('active');
+            
             // 设置选中标签为活跃状态
             event.target.classList.add('active');
+        }
+
+        function prepareForResults() {
+            // 显示查询结果选项卡
+            document.getElementById('resultsTab').style.display = 'block';
+        }
+
+        function toggleUserFields(role) {
+            const studentFields = document.getElementById('student-fields');
+            const teacherFields = document.getElementById('teacher-fields');
+            
+            // 隐藏所有特殊字段
+            studentFields.style.display = 'none';
+            teacherFields.style.display = 'none';
+            
+            // 根据角色显示对应字段
+            if (role === 'student') {
+                studentFields.style.display = 'block';
+            } else if (role === 'teacher') {
+                teacherFields.style.display = 'block';
+            }
+        }
+
+        // 如果有查询结果，自动显示结果选项卡并切换到结果页面
+        if(results){
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('resultsTab').style.display = 'block';
+            showTab('results');
+            // 手动设置结果选项卡为活跃状态
+            document.getElementById('resultsTab').classList.add('active');
+        });
         }
     </script>
 </body>
