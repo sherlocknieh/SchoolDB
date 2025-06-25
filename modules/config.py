@@ -24,21 +24,64 @@ def create_connection(database='SchoolDB'):
 
 
 def execute_query(query, *args):
-    conn = create_connection()
-    cursor = conn.cursor()
+    conn = None
+    cursor = None
 
-    print(f'[INFO] 正在查询')
-    cursor.execute(query, *args)
+    print("**********")
+    print(query)
+    print(args)
 
-    columns = [desc[0] for desc in cursor.description]    # 获取表头
-    rows = cursor.fetchall()                              # 获取所有行
-    result = [dict(zip(columns, row)) for row in rows]    # 转换为字典列表
-    cursor.close()
-    conn.close()
-    print(f'[INFO] 查询完成...连接已关闭')
+    try:
+        conn = create_connection()
+        if conn is None:
+            return []
+        
+        cursor = conn.cursor()
+        if len(args) == 1 and isinstance(args[0], tuple):
+            params = args[0] 
+        else:
+            params = args
+        cursor.execute(query, params)
+        if cursor.description is None:
+            conn.commit()
+            return []
+        else:
+            columns = [desc[0] for desc in cursor.description]
+            rows = cursor.fetchall()
+            print("result:")
+            print(rows)
+            conn.commit()
+            if rows is None:
+                return []
+            
+            result = [dict(zip(columns, row)) for row in rows]
+            print(f'[INFO] 查询完成，返回 {len(result)} 条记录')
+            return result
+        
+    except Exception as e:
+        if conn:
+            try:
+                conn.rollback()
+                print("[INFO] 事务已回滚")
+            except:
+                pass
+        return [] 
+        
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+                print("[INFO] 游标已关闭")
+        except Exception as e:
+            print(f"[WARNING] 关闭游标时出错: {str(e)}")
+            
+        try:
+            if conn:
+                conn.close()
+        except Exception as e:
+            print(f"[WARNING] 关闭连接时出错: {str(e)}")
 
-    # 返回结果
-    return result
+
 
 
 if __name__ == '__main__':
