@@ -1,7 +1,7 @@
 import pyodbc
 from flask import Flask, request, session, render_template, redirect, url_for, jsonify
 
-from modules.config import execute_query     # 数据库查询函数: 自动连接数据库、执行查询、返回结果
+from modules.tools import execute_query     # 数据库查询函数: 自动连接数据库、执行查询、返回结果
 
 
 app = Flask(__name__)

@@ -18,7 +18,7 @@
 
     > pip install -r requirements.txt
 
-3. 修改 modules/config.py 中的数据库连接信息;
+3. 修改 modules/tools.py 中的数据库连接信息;
 
 4. 运行 APP.py; 浏览器访问 http://localhost:5000;
 

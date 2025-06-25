@@ -1,4 +1,4 @@
-from modules.config import execute_query
+from modules.tools import execute_query
 
 def student_action(action_type, **kwargs):
     """

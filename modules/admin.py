@@ -1,4 +1,4 @@
-from modules.config import execute_query
+from modules.tools import execute_query
 
 def admin_action(action=None, **kwargs):
     """管理员操作函数"""

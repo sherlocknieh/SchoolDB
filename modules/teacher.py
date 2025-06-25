@@ -1,8 +1,8 @@
 
 if __name__ == '__main__':
-    from config import create_connection
+    from modules.tools import create_connection
 else:
-    from .config import create_connection
+    from .tools import create_connection
 
 
 
@@ -11,7 +11,7 @@ else:
 解析命令并执行相应的操作
 返回结果
 """
-from modules.config import execute_query
+from modules.tools import execute_query
 
 def teacher_action(action_type, **kwargs):
     """
