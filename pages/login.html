@@ -2,7 +2,92 @@
 <html>
 <head>
     <title>学生成绩管理系统-登录页</title>
-    <link rel="stylesheet" href="static/styles.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;          /* 使用Arial字体 */
+            background-color: #f5f5f5;               /* 浅灰色背景 */
+            margin: 0;                                 /* 去除默认外边距 */
+            padding: 0;                                /* 去除默认内边距 */
+            min-height: 100vh;                         /* 最小高度为视口高度 */
+            display: flex;                             /* 启用flex布局 */
+            flex-direction: column;                    /* 垂直排列子元素 */
+            justify-content: center;                   /* 垂直居中内容 */
+            align-items: center;                       /* 水平居中内容 */
+            position: relative;                        /* 为固定页脚做准备 */
+            padding-top: 60px;                         /* 为顶部导航栏留出空间 */
+            padding-bottom: 60px;                      /* 为页脚留出空间 */
+            box-sizing: border-box;                    /* 确保padding不影响整体高度 */
+        }
+
+        /* ================= 登录页面样式 ================= */
+        /* 主标题样式 */
+        h1 {
+            color: #2c3e50;                          /* 深蓝色文字 */
+            margin-bottom: 30px;                       /* 底部间距30px */
+            text-align: center;                        /* 文字居中 */
+            width: auto;                               /* 宽度自适应 */
+        }
+
+        /* 登录表单容器 */
+        .login-container {
+            background-color: white;                 /* 白色背景 */
+            padding: 30px;                             /* 内边距30px */
+            border-radius: 8px;                        /* 圆角8px */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);   /* 轻微阴影效果 */
+            width: 350px;                              /* 固定宽度350px */
+            max-width: 90%;                            /* 最大宽度为父容器的90% */
+            margin: 20px;                              /* 上下边距20px */
+        }
+
+        /* 登录表单标题 */
+        h3 {
+            color: #2c3e50;                         /* 深蓝色文字 */
+            text-align: center;                       /* 文字居中 */
+            margin-bottom: 20px;                      /* 底部间距20px */
+        }
+
+        /* 输入框通用样式 */
+        input[type="text"], 
+        input[type="password"],
+        select {
+            width: 100%;                              /* 宽度100%填满容器 */
+            padding: 12px;                            /* 内边距12px */
+            margin: 8px 0;                            /* 上下边距8px，左右0 */
+            border: 1px solid #ddd;                 /* 浅灰色边框 */
+            border-radius: 4px;                       /* 圆角4px */
+            box-sizing: border-box;                   /* 盒模型计算方式 */
+            font-size: 16px;                          /* 字体大小16px */
+        }
+
+        /* 提交按钮样式 */
+        button[type="submit"] {
+            width: 100%;                              /* 宽度100%填满容器 */
+            background-color: #3498db;              /* 蓝色背景 */
+            color: white;                           /* 白色文字 */
+            padding: 14px;                            /* 内边距14px */
+            margin: 10px 0;                           /* 上下边距10px，左右0 */
+            border: none;                             /* 无边框 */
+            border-radius: 4px;                       /* 圆角4px */
+            cursor: pointer;                          /* 鼠标指针变为手形 */
+            font-size: 16px;                          /* 字体大小16px */
+            font-weight: bold;                        /* 加粗字体 */
+            transition: background-color 0.3s;        /* 背景色过渡动画0.3秒 */
+        }
+
+        /* 提交按钮悬停效果 */
+        button[type="submit"]:hover {
+            background-color: #2980b9;              /* 悬停时变为深蓝色 */
+        }
+
+        /* 错误消息样式 */
+        #error-message {
+            margin-top: 15px;                         /* 顶部间距15px */
+            text-align: center;                       /* 文字居中 */
+            font-size: 14px;                          /* 字体大小14px */
+            color: red;                             /* 红色文字(已在HTML中内联定义) */
+        }
+
+    </style>
 </head>
 <body>
     <h1>学生成绩管理系统</h1>
