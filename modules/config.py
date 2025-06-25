@@ -23,13 +23,12 @@ def create_connection(database='SchoolDB'):
     return conn
 
 
-def execute_query(query, database='SchoolDB'):
-    conn = create_connection(database)
+def execute_query(query, *args):
+    conn = create_connection()
     cursor = conn.cursor()
 
-    print(f'[INFO] 正在执行查询: {query}')
-    cursor.execute(query)
-
+    print(f'[INFO] 正在查询')
+    cursor.execute(query, *args)
 
     columns = [desc[0] for desc in cursor.description]    # 获取表头
     rows = cursor.fetchall()                              # 获取所有行
@@ -43,22 +42,18 @@ def execute_query(query, database='SchoolDB'):
 
 
 if __name__ == '__main__':
+    
     # 测试查询
-
-    input_username = 'student1'
-    input_role = 'Student'
-
+    role = 'Student'
     result = execute_query(
-        f"SELECT username, password, role"
-        f" FROM Users"
-        f" WHERE username = '{input_username}'"
-        f" AND role = '{input_role}'"
+        "SELECT username, password, role FROM Users WHERE role = ?",
+        (role)
     )
     # 打印结果
-    print(f'[INFO] 查询结果: ')
+    print(f'[INFO] 查询结果:')
     [print(row) for row in result]
     
-    # 格式化输出
+    # 格式化打印
     import json
-    print('[INFO] 格式化输出: ')
+    print('[INFO] 格式化输出:')
     print(json.dumps(result, indent=4))

@@ -75,7 +75,7 @@
         }
         
         .tab {
-            padding: 15px 25px;
+            padding: 15px 20px;
             cursor: pointer;
             background: none;
             border: none;
@@ -167,7 +167,7 @@
         .results-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 2rem;
+            margin-top: 1rem;
             background: white;
             border-radius: 8px;
             overflow: hidden;
@@ -216,6 +216,22 @@
             border-radius: 8px;
             margin-bottom: 1.5rem;
         }
+        
+        .results-notice {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: #0056b3;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin-top: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -242,6 +258,7 @@
                 <button class="tab" onclick="showTab('courses')">课程管理</button>
                 <button class="tab" onclick="showTab('students')">学生管理</button>
                 <button class="tab" onclick="showTab('profile')">个人设置</button>
+                <button class="tab" onclick="showTab('results')" id="resultsTab" style="display: none;">查询结果</button>
             </div>
 
             <!-- 成绩管理 -->
@@ -301,7 +318,7 @@
                 <!-- 查询成绩 -->
                 <div class="search-filters">
                     <h3>查询成绩</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_grades">
                         <div class="form-row">
                             <div class="form-group">
@@ -324,7 +341,7 @@
                 <!-- 成绩录入状态 -->
                 <div class="search-filters">
                     <h3>成绩录入状态</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_grade_status">
                         <div class="form-row">
                             <div class="form-group">
@@ -343,7 +360,7 @@
                 
                 <div class="search-filters">
                     <h3>查询我的课程</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_courses">
                         <div class="form-row">
                             <div class="form-group">
@@ -362,7 +379,7 @@
                 
                 <div class="search-filters">
                     <h3>查询选课学生</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_students">
                         <div class="form-row">
                             <div class="form-group">
@@ -417,29 +434,41 @@
                     </form>
                 </div>
             </div>
-        </div>
 
-        <!-- 查询结果表格 -->
-        {% if results %}
-        <table class="results-table">
-            <thead>
-                <tr>
-                    {% for key in results[0].keys() %}
-                    <th>{{ key }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in results %}
-                <tr>
-                    {% for value in row.values() %}
-                    <td>{{ value }}</td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
+            <!-- 查询结果 -->
+            <div id="results" class="tab-content">
+                <h2>查询结果</h2>
+                
+                {% if results %}
+                    <div class="results-notice">
+                        <strong>查询成功！</strong> 找到 {{ results|length }} 条记录
+                    </div>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                {% for key in results[0].keys() %}
+                                <th>{{ key }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                            <tr>
+                                {% for value in row.values() %}
+                                <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="no-results">
+                        <p>暂无查询结果</p>
+                        <p>请先在其他选项卡中执行查询操作</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <script>
@@ -458,6 +487,22 @@
             // 设置选中标签为活跃状态
             event.target.classList.add('active');
         }
+
+        function prepareForResults() {
+            // 显示查询结果选项卡
+            document.getElementById('resultsTab').style.display = 'block';
+        }
+
+        // 如果有查询结果，自动显示结果选项卡并切换到结果页面
+       if(results){
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('resultsTab').style.display = 'block';
+            showTab('results');
+            // 手动设置结果选项卡为活跃状态
+            document.getElementById('resultsTab').classList.add('active');
+        });
+    }
+        endif 
     </script>
 </body>
 </html>

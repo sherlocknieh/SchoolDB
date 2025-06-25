@@ -21,7 +21,7 @@ def login():
         input_role = request.form.get('role')
         try:
             result = execute_query(
-                f"SELECT username, password, role"
+                f"SELECT user_id, username, password, role"
                 f" FROM Users"
                 f" WHERE username = '{input_username}'"
                 f" AND role = '{input_role}'"
@@ -35,6 +35,7 @@ def login():
                 else:
                     session['user'] = data['username']
                     session['role'] = data['role']
+                    session['user_id'] = data['user_id']
                     #print(f"[INFO] 用户 {session['user']} 登录成功")
                     return jsonify({"redirect_url": url_for(f"{data['role']}")})
         except pyodbc.ProgrammingError as pe:

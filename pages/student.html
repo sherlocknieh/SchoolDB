@@ -177,7 +177,7 @@
         .results-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 2rem;
+            margin-top: 1rem;
             background: white;
             border-radius: 8px;
             overflow: hidden;
@@ -259,6 +259,31 @@
             font-size: 0.9rem;
             opacity: 0.9;
         }
+        
+        .auto-load-info {
+            background: #e8f4f8;
+            color: #0c5460;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .results-notice {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: #0056b3;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin-top: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -287,12 +312,16 @@
                 <button class="tab" onclick="showTab('course-search')">课程查询</button>
                 <button class="tab" onclick="showTab('credit')">学分统计</button>
                 <button class="tab" onclick="showTab('profile')">个人设置</button>
+                <button class="tab" onclick="showTab('results')" id="resultsTab" style="display: none;">查询结果</button>
             </div>
 
             <!-- 个人概览 -->
             <div id="overview" class="tab-content active">
                 <h2>个人概览</h2>
-                <form method="post">
+                <div class="auto-load-info">
+                    <strong>提示：</strong>点击下方按钮查看您的学习概览信息
+                </div>
+                <form method="post" onsubmit="prepareForResults()">
                     <input type="hidden" name="action" value="get_overview">
                     <button type="submit" class="btn">刷新概览信息</button>
                 </form>
@@ -305,7 +334,7 @@
                 <!-- 查询所有成绩 -->
                 <div class="search-filters">
                     <h3>查询所有成绩</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_all_grades">
                         <button type="submit" class="btn">查询所有成绩</button>
                     </form>
@@ -314,7 +343,7 @@
                 <!-- 按学期查询成绩 -->
                 <div class="search-filters">
                     <h3>按学期查询成绩</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_grades_by_semester">
                         <div class="form-row">
                             <div class="form-group">
@@ -329,7 +358,7 @@
                 <!-- 按课程查询成绩 -->
                 <div class="search-filters">
                     <h3>按课程查询成绩</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_grades_by_course">
                         <div class="form-row">
                             <div class="form-group">
@@ -391,7 +420,7 @@
                 <!-- 查询我的课程 -->
                 <div class="search-filters">
                     <h3>查询我的课程</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_courses">
                         <button type="submit" class="btn">查询我的课程</button>
                     </form>
@@ -405,7 +434,7 @@
                 <!-- 查询所有课程 -->
                 <div class="search-filters">
                     <h3>查询所有课程</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_course_info">
                         <button type="submit" class="btn">查询所有课程</button>
                     </form>
@@ -414,7 +443,7 @@
                 <!-- 多条件查询课程 -->
                 <div class="search-filters">
                     <h3>多条件查询课程</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_course_info">
                         <div class="form-row">
                             <div class="form-group">
@@ -449,7 +478,7 @@
                 <!-- 查询课程详情 -->
                 <div class="search-filters">
                     <h3>查询课程详情</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_course_detail">
                         <div class="form-row">
                             <div class="form-group">
@@ -469,7 +498,7 @@
                 <!-- 学分概览 -->
                 <div class="search-filters">
                     <h3>学分概览</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_credit">
                         <button type="submit" class="btn">查询学分统计</button>
                     </form>
@@ -478,7 +507,7 @@
                 <!-- 详细学分报告 -->
                 <div class="search-filters">
                     <h3>详细学分报告</h3>
-                    <form method="post">
+                    <form method="post" onsubmit="prepareForResults()">
                         <input type="hidden" name="action" value="get_credit_report">
                         <button type="submit" class="btn">生成学分报告</button>
                     </form>
@@ -529,65 +558,76 @@
                     </form>
                 </div>
             </div>
-        </div>
 
-        <!-- 查询结果表格 -->
-        {% if results %}
-        <div class="results-section">
-            {% if results[0] and 'total_courses' in results[0] %}
-            <!-- 学分统计卡片 -->
-            <div class="stats-card">
-                <h3>学分统计概览</h3>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-number">{{ results[0]['total_courses'] or 0 }}</span>
-                        <span class="stat-label">总课程数</span>
+            <!-- 查询结果 -->
+            <div id="results" class="tab-content">
+                <h2>查询结果</h2>
+                
+                {% if results %}
+                    <div class="results-notice">
+                        <strong>查询成功！</strong> 找到 {{ results|length }} 条记录
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ results[0]['earned_credits'] or 0 }}</span>
-                        <span class="stat-label">已获得学分</span>
+                    
+                    {% if results[0] and 'total_courses' in results[0] %}
+                    <!-- 学分统计卡片 -->
+                    <div class="stats-card">
+                        <h3>学分统计概览</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number">{{ results[0]['total_courses'] or 0 }}</span>
+                                <span class="stat-label">总课程数</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ results[0]['earned_credits'] or 0 }}</span>
+                                <span class="stat-label">已获得学分</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ results[0]['total_attempted_credits'] or 0 }}</span>
+                                <span class="stat-label">总修读学分</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ results[0]['overall_gpa'] or 0 }}</span>
+                                <span class="stat-label">平均绩点</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ results[0]['passed_courses'] or 0 }}</span>
+                                <span class="stat-label">通过课程</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ results[0]['failed_courses'] or 0 }}</span>
+                                <span class="stat-label">未通过课程</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ results[0]['total_attempted_credits'] or 0 }}</span>
-                        <span class="stat-label">总修读学分</span>
+                    {% else %}
+                    <!-- 普通表格 -->
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                {% for key in results[0].keys() %}
+                                <th>{{ key }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                            <tr>
+                                {% for value in row.values() %}
+                                <td>{{ value if value is not none else '未录入' }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                {% else %}
+                    <div class="no-results">
+                        <p>暂无查询结果</p>
+                        <p>请先在其他选项卡中执行查询操作</p>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ results[0]['overall_gpa'] or 0 }}</span>
-                        <span class="stat-label">平均绩点</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ results[0]['passed_courses'] or 0 }}</span>
-                        <span class="stat-label">通过课程</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ results[0]['failed_courses'] or 0 }}</span>
-                        <span class="stat-label">未通过课程</span>
-                    </div>
-                </div>
+                {% endif %}
             </div>
-            {% else %}
-            <!-- 普通表格 -->
-            <table class="results-table">
-                <thead>
-                    <tr>
-                        {% for key in results[0].keys() %}
-                        <th>{{ key }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in results %}
-                    <tr>
-                        {% for value in row.values() %}
-                        <td>{{ value if value is not none else '未录入' }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% endif %}
         </div>
-        {% endif %}
     </div>
 
     <script>
@@ -607,19 +647,23 @@
             event.target.classList.add('active');
         }
 
-        // 页面加载时自动显示概览信息
-        window.addEventListener('load', function() {
-            // 如果没有查询结果且在概览页面，自动提交概览查询
-            const activeTab = document.querySelector('.tab-content.active');
-            const hasResults = document.querySelector('.results-section');
-            
-            if (activeTab && activeTab.id === 'overview' && !hasResults) {
-                const overviewForm = activeTab.querySelector('form');
-                if (overviewForm) {
-                    overviewForm.submit();
-                }
-            }
-        });
+        function prepareForResults() {
+            // 显示查询结果选项卡
+            document.getElementById('resultsTab').style.display = 'block';
+        }
+
+        // 如果有查询结果，自动显示结果选项卡并切换到结果页面
+        if(results){
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('resultsTab').style.display = 'block';
+            showTab('results');
+            // 手动设置结果选项卡为活跃状态
+            document.getElementById('resultsTab').classList.add('active');
+            });
+        }
+        endif
+
+        console.log('页面加载完成，请手动点击相应按钮获取数据');
     </script>
 </body>
 </html>

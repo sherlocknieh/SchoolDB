@@ -55,8 +55,9 @@ BEGIN
         PRINT 'Admin user created, no entry in Students/Teachers table.';
     END
 END;
-
 GO
+
+
 -- 管理员删除用户，由于在表中实现了ON DELETE CASCADE，可以直接删除
 CREATE PROCEDURE sp_delete_user
     @p_username VARCHAR(50)
@@ -102,9 +103,8 @@ BEGIN
         RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
     END CATCH
 END
-
-
 GO
+
 
 -- 如果课程ID已存在，则更新信息；否则，插入新课程。
 CREATE PROCEDURE sp_add_course
@@ -129,8 +129,9 @@ BEGIN
     DECLARE @msg VARCHAR(200) = '课程信息已成功添加或更新 (ID: ' + @p_course_id + ')';
     PRINT @msg;
 END;
-
 GO
+
+
 --管理员删除某一个课程
 CREATE PROCEDURE sp_delete_course
     @course_id VARCHAR(10)
@@ -193,8 +194,9 @@ BEGIN
         RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
     END CATCH
 END
-
 GO
+
+
 -- 存储过程：管理员安排教学任务
 CREATE PROCEDURE sp_add_tc
     @p_teacher_id VARCHAR(10),
@@ -233,8 +235,8 @@ BEGIN
         END
     END CATCH
 END;
-
 GO
+
 
 -- 存储过程：管理员删除教学任务，注意如果有学生选课，会一并删除
 CREATE PROCEDURE sp_delete_tc
@@ -303,8 +305,9 @@ BEGIN
         RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
     END CATCH
 END
-
 GO
+
+
 --查询功能
 CREATE PROCEDURE sp_get_user_info
     @username VARCHAR(50)
@@ -379,8 +382,10 @@ BEGIN
         SELECT '管理员账户' AS '账户类型';
     END
 END;
-
 GO
+
+
+-- 管理员获取学生成绩
 CREATE PROCEDURE sp_get_grades_admin
     @username VARCHAR(50)
 AS
@@ -437,9 +442,11 @@ BEGIN
                       AND sc.semester = g.semester
     WHERE u.username = @username;
 END;
+GO
+
 
 -- 以下为管理员的统计功能
---系统统计
+-- 系统统计
 CREATE PROCEDURE sp_admin_get_system_statistics
 AS
 BEGIN
@@ -477,8 +484,9 @@ BEGIN
             '%'
         ) AS '成绩录入率';
 END;
-
 GO
+
+
 --课程统计
 CREATE PROCEDURE sp_admin_get_course_statistics
     @semester VARCHAR(20) = NULL,  
@@ -581,8 +589,9 @@ BEGIN
                  END;
     END
 END;
-
 GO
+
+
 --学期统计
 CREATE PROCEDURE sp_admin_get_semester_statistics
     @semester VARCHAR(20) = NULL  
@@ -765,8 +774,9 @@ BEGIN
     GROUP BY tc.semester
     ORDER BY tc.semester;
 END;
-
 GO
+
+
 --教师工作量统计 - 教师教授课程数、学生数
 CREATE PROCEDURE sp_admin_get_teacher_statistics
     @semester VARCHAR(20) = NULL,    
@@ -962,8 +972,9 @@ BEGIN
         ORDER BY workload_rank.total_students DESC, workload_rank.courses_taught DESC;
     END
 END;
-
 GO
+
+
 --统计学生信息
 CREATE PROCEDURE sp_admin_get_student_stastic
     @student_id VARCHAR(10) = NULL,   
