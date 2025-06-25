@@ -117,21 +117,21 @@ BEGIN
         SELECT 
             c.course_id AS '课程编号',
             c.name AS '课程名称',
-            c.description AS '课程描述',
+            CAST(c.description AS NVARCHAR(MAX)) AS '课程描述',
             c.credits AS '学分',
             COUNT(DISTINCT tc.teacher_id) AS '授课教师数',
             COUNT(DISTINCT tc.semester) AS '开设学期数'
         FROM Courses c
         LEFT JOIN TC tc ON c.course_id = tc.course_id
-        GROUP BY c.course_id, c.name, c.description, c.credits
+        GROUP BY c.course_id, c.name, CAST(c.description AS NVARCHAR(MAX)), c.credits
         ORDER BY c.course_id;
         RETURN;
     END
     
-    SELECT DISTINCT
+    SELECT 
         c.course_id AS '课程编号',
         c.name AS '课程名称',
-        c.description AS '课程描述',
+        CAST(c.description AS NVARCHAR(MAX)) AS '课程描述',
         c.credits AS '学分',
         t.name AS '授课教师',
         t.department AS '教师所属部门',
@@ -150,7 +150,7 @@ BEGIN
         AND (@semester IS NULL OR tc.semester = @semester)
         AND (@min_credits IS NULL OR c.credits >= @min_credits)
         AND (@max_credits IS NULL OR c.credits <= @max_credits)
-    GROUP BY c.course_id, c.name, c.description, c.credits, 
+    GROUP BY c.course_id, c.name, CAST(c.description AS NVARCHAR(MAX)), c.credits, 
              t.name, t.department, tc.semester
     ORDER BY c.course_id, tc.semester;
     
@@ -171,6 +171,9 @@ BEGIN
         AND (@min_credits IS NULL OR c.credits >= @min_credits)
         AND (@max_credits IS NULL OR c.credits <= @max_credits);
 END;
+
+
+
 
 
 GO

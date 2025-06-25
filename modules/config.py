@@ -3,8 +3,9 @@ import pyodbc
 
 
 # 靠底部的变量有效, 使用时交换一下顺序即可
-server_name = '华硕天选'
 server_name = 'localhost\\SQLEXPRESS'
+server_name = '华硕天选'
+
 
 
 def create_connection(database='SchoolDB'):
